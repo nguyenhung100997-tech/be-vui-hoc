@@ -1,0 +1,46 @@
+rules_version = '2';
+// Luật bảo mật cho "Bé Vui Học – Lớp chung".
+// Chỉ máy đã mở trang (đăng nhập ẩn danh) mới đọc/ghi được; không ai xoá được dữ liệu.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+
+    match /classes/{code} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['name', 'grade', 'tH'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60;
+      // Không cho đổi PIN giáo viên của lớp
+      allow update: if signedIn() && request.resource.data.tH == resource.data.tH;
+      allow delete: if false;
+
+      match /students/{sid} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.name is string
+          && request.resource.data.name.size() <= 40
+          && request.resource.data.stars == 0;
+        allow update: if signedIn();
+        allow delete: if false;
+      }
+
+      match /events/{eid} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.gain is int && request.resource.data.gain <= 60;
+        allow update, delete: if false;
+      }
+
+      match /exams/{xid} {
+        allow read, create, update: if signedIn();
+        allow delete: if false;
+
+        match /results/{sid} {
+          allow read: if signedIn();
+          // Mỗi bạn chỉ nộp một lần, không sửa được điểm đã nộp
+          allow create: if signedIn() && !exists(/databases/$(database)/documents/classes/$(code)/exams/$(xid)/results/$(sid));
+          allow update, delete: if false;
+        }
+      }
+    }
+  }
+}

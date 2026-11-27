@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bé Vui Học – Lớp 1 đến 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* VOICE: vui tươi, ấm áp; lớn dần theo tuổi – lớp 1 như sách tranh, lớp 5 như phòng luyện thi
+   IDEA: mỗi lớp là một thế giới riêng trong cuốn sách phiêu lưu: vườn ươm, đảo kho báu, đường đua, phi thuyền, phòng thi
+   PICTURE: mỗi thế giới có biểu tượng riêng ở từng trạm; câu hỏi có hình vẽ (đếm, đồng hồ, hình học, phân số)
+   COLOUR and TYPE: vàng hướng dương làm khung chung; mỗi lớp một màu chủ đạo; Baloo 2 + Nunito (đủ dấu tiếng Việt)
+   LAYOUT: menu trên cùng; trang chủ chọn lớp; mỗi lớp có bản đồ 6 chặng + khu kiểm tra; thẻ câu hỏi lớn ở giữa */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#17182b);--ink:light-dark(#1d2a5c,#eef1ff);--soft:light-dark(#53608f,#b8bfe3);
+--sun:light-dark(#ffd23f,#2a2550);--sunInk:light-dark(#1d2a5c,#fff3c4);--card:light-dark(#ffffff,#22243d);
+--line:light-dark(#e4e7f5,#363a5c);--blue:light-dark(#2457d6,#7aa2ff);--coral:#ff6b5b;--ok:#1f9d55;--okbg:light-dark(#e3f7ea,#173a29);
+--bad:#e0473a;--badbg:light-dark(#fde7e4,#3e1d1d);--gold:#f5b301;--tint:light-dark(#fff6d6,#1f2140);--g:#2457d6}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Baloo 2",Nunito,sans-serif;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,52px)}h2{font-size:clamp(28px,3.6vw,38px)}h3{font-size:21px}
+p{margin:.4em 0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:16px;min-height:44px;padding:10px 18px;font-weight:800}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.btn{background:var(--blue);color:#fff;box-shadow:0 4px 0 light-dark(#16399a,#3f5fc0);text-decoration:none;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 light-dark(#16399a,#3f5fc0)}
+.btn.alt{background:var(--card);color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+.btn.coral{background:var(--coral);box-shadow:0 4px 0 #c94436}
+.btn.g{background:var(--g);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.top{position:sticky;top:0;z-index:5;background:var(--sun);color:var(--sunInk);border-bottom:3px solid light-dark(#f0b800,#3a3570)}
+.top .wrap{display:flex;align-items:center;gap:10px;padding:6px max(3vw,12px);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:8px;font:800 23px "Baloo 2",sans-serif;text-decoration:none;color:inherit}
+.logo svg{width:42px;height:42px}
+nav{display:flex;gap:2px;overflow-x:auto;flex:1 1 0}
+nav a{flex:none;padding:8px 12px;border-radius:14px;text-decoration:none;color:inherit;font-weight:800;min-height:44px;display:flex;align-items:center}
+nav a[aria-current=page]{background:light-dark(#fff,#3a3570)}
+.pill{display:flex;align-items:center;gap:6px;background:light-dark(#fff,#3a3570);border-radius:999px;padding:6px 14px;font-weight:800;white-space:nowrap}
+.pill svg{width:22px;height:22px}
+.view{display:none}.view.on{display:block}
+.hero{background:var(--sun);color:var(--sunInk)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 40px;align-items:center}
+.hero p.lead{font-size:19px;max-width:34em}
+.namebox{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.namebox input{flex:1 1 200px;font-size:18px;padding:12px 16px;border-radius:16px;border:3px solid light-dark(#1d2a5c,#7aa2ff);background:var(--card);min-height:52px}
+.hello{font-weight:800;font-size:18px;margin-top:16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.chips button{background:light-dark(#fff,#3a3570);padding:6px 14px;font-weight:700;border-radius:999px}
+.chips button[aria-pressed=true]{outline:3px solid var(--blue)}
+.grades{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.gcard{background:var(--card);color:var(--ink);border:3px solid var(--line);border-radius:26px;padding:16px;text-align:left;display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center;font-weight:600;box-shadow:0 5px 0 var(--line)}
+.gcard:hover{border-color:var(--g)}
+.gcard svg{width:72px;height:72px}
+.gcard b{display:block;font:800 22px "Baloo 2",Nunito,sans-serif;color:var(--g)}
+.gcard small{display:block;color:var(--soft);font-size:14px;line-height:1.35}
+.gcard.cur{border-color:var(--g);box-shadow:0 5px 0 var(--g)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:20px}
+.gband{background:var(--g);color:#fff}
+.gband .wrap{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;align-items:center}
+.gband svg.em{width:120px;height:120px;background:rgba(255,255,255,.18);border-radius:30px;padding:8px}
+.gband p{max-width:46em}
+.rules{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.rules span{background:rgba(255,255,255,.2);border-radius:99px;padding:4px 12px;font-weight:700;font-size:15px}
+.prog{height:14px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0;max-width:520px}
+.prog i{display:block;height:100%;background:var(--g);border-radius:99px;transition:width .6s}
+.cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:28px;align-items:start}
+.trail{position:relative;display:grid;gap:18px;margin-top:18px}
+.trail::before{content:"";position:absolute;left:35px;top:20px;bottom:20px;border-left:6px dashed var(--line)}
+.stop{position:relative;display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:center}
+.stop .ic{width:76px;height:76px;border-radius:24px;background:var(--card);border:3px solid var(--line);display:grid;place-items:center;z-index:1}
+.stop.done .ic{border-color:var(--g)}
+.stop .ic svg{width:58px;height:58px}
+.stop .card{padding:14px 18px}
+.stop.lock .card{opacity:.6}
+.stop h3 small{font:700 14px Nunito,sans-serif;color:var(--soft);display:block;margin-bottom:2px}
+.stop p{margin:4px 0 10px;color:var(--soft);font-size:15px}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+.acts small{font-weight:700;opacity:.85}
+.locknote{font-size:15px;font-weight:700;color:var(--soft)}
+.exam h3{margin-bottom:6px}.exam .acts{margin-top:10px}.exam .btn{flex:1 1 140px}
+.qwrap{max-width:880px;margin:0 auto}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800}
+.qhead .clock{font-variant-numeric:tabular-nums;background:var(--tint);padding:4px 12px;border-radius:99px}
+.qhead .clock.low{background:var(--badbg);color:var(--bad)}
+.dots{display:flex;gap:5px;margin:12px 0}
+.dots i{flex:1;height:10px;border-radius:9px;background:var(--line)}
+.dots i.ok{background:var(--ok)}.dots i.no{background:var(--bad)}.dots i.cur{background:var(--gold)}.dots i.ans{background:var(--blue)}
+.timer{height:8px;border-radius:9px;background:var(--line);overflow:hidden;margin-bottom:12px}
+.timer i{display:block;height:100%;background:var(--g);width:100%}
+.timer.low i{background:var(--coral)}
+.streak{color:var(--coral)}
+.qcard{background:var(--tint);border-radius:28px;padding:clamp(18px,4vw,32px)}
+.qtop{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;align-items:start}
+.qtop svg.owl{width:72px;height:72px}
+.lvl{display:inline-block;font-size:13px;font-weight:800;padding:2px 10px;border-radius:99px;background:var(--card);color:var(--soft);margin-bottom:6px}
+.qtext{font:700 clamp(21px,3.2vw,30px)/1.3 "Baloo 2",Nunito,sans-serif;margin:0}
+.passage{background:var(--card);border-radius:18px;padding:14px 18px;margin-bottom:14px;font-size:18px;line-height:1.7;border-left:6px solid var(--g)}
+.pic{display:flex;justify-content:center;margin-top:14px}
+.pic svg{width:100%;max-width:420px;height:auto;max-height:240px}
+.speak{background:transparent;color:var(--blue);padding:6px 8px;margin-top:6px;display:inline-flex;gap:6px;align-items:center;font-size:15px;min-height:36px}
+.speak svg{width:20px;height:20px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.opts.one{grid-template-columns:minmax(0,1fr)}
+.opt{background:var(--card);border:3px solid var(--line);box-shadow:0 5px 0 var(--line);font-size:clamp(18px,2.4vw,22px);text-align:left;padding:14px 16px;min-height:66px;display:flex;gap:12px;align-items:center;border-radius:20px;font-weight:700}
+.opt b{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--sun);color:var(--sunInk);font-size:15px}
+.opt:hover:not(:disabled){border-color:var(--g)}
+.opt.ok{background:var(--okbg);border-color:var(--ok);box-shadow:0 5px 0 var(--ok)}
+.opt.no{background:var(--badbg);border-color:var(--bad);box-shadow:0 5px 0 var(--bad)}
+.opt.pick{border-color:var(--blue);box-shadow:0 5px 0 var(--blue)}
+.opt.gone{opacity:.25}
+.opt:disabled{cursor:default}
+.inrow{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.inrow input{flex:1 1 180px;font-size:26px;font-weight:800;padding:10px 16px;border-radius:18px;border:3px solid var(--line);background:var(--card);min-height:60px}
+.inrow input:focus{border-color:var(--g);outline:none}
+.inrow input.ok{border-color:var(--ok);background:var(--okbg)}.inrow input.no{border-color:var(--bad);background:var(--badbg)}
+.pad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px;max-width:520px}
+.pad button{background:var(--card);border:2px solid var(--line);font-size:20px;min-height:48px;padding:6px}
+.order .line{min-height:64px;border:3px dashed var(--line);border-radius:18px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+.order .line:empty::before{content:"Bấm vào các thẻ bên dưới theo đúng thứ tự";color:var(--soft);font-size:15px;padding:0 6px}
+.order .pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{background:var(--card);border:2px solid var(--line);box-shadow:0 3px 0 var(--line);font-size:19px;font-weight:700;padding:8px 14px}
+.line .chip{border-color:var(--g)}
+.order.ok .line{border-color:var(--ok);background:var(--okbg)}.order.no .line{border-color:var(--bad);background:var(--badbg)}
+.fb{min-height:56px;margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-weight:800;font-size:18px}
+.fb .y{color:var(--ok)}.fb .n{color:var(--bad)}
+.fb .ex{display:block;font-weight:600;color:var(--ink);font-size:16px;margin-top:2px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.res{max-width:820px;margin:0 auto}
+.res .top1{text-align:center}
+.big{font:800 clamp(56px,11vw,92px)/1 "Baloo 2",Nunito,sans-serif;margin:8px 0}
+.stars{display:flex;justify-content:center;gap:6px;margin:8px 0}
+.stars svg{width:36px;height:36px}
+.res .acts{justify-content:center;margin-top:18px}
+.lvrow{display:grid;grid-template-columns:7em minmax(0,1fr) 4.5em;gap:10px;align-items:center;margin:8px 0;font-weight:700}
+.bar{height:14px;background:var(--line);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g);border-radius:99px}
+.lvrow span:last-child{text-align:right;white-space:nowrap}
+.rv{list-style:none;padding:0;display:grid;gap:10px;margin-top:14px}
+.rv li{background:var(--card);border:2px solid var(--line);border-left:6px solid var(--ok);border-radius:16px;padding:12px 16px}
+.rv li.no{border-left-color:var(--bad)}
+.rv .m{font-size:13px;color:var(--soft);font-weight:800}
+@media(prefers-reduced-motion:no-preference){.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}@keyframes pop{from{transform:scale(.7);opacity:0}}}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;margin-top:20px}
+.item{text-align:center;padding:18px}
+.item svg{width:92px;height:92px;display:block;margin:0 auto 8px}
+.item .btn{margin-top:10px;width:100%}
+.own{font-weight:800;color:var(--ok);margin-top:10px;min-height:44px;display:grid;place-items:center}
+table{width:100%;border-collapse:collapse;margin-top:16px;background:var(--card);border-radius:18px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:14px;color:var(--soft)}
+td.n,th.n{text-align:right;white-space:nowrap}
+.medal{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;font-weight:800;background:var(--line)}
+tbody tr:nth-child(1) .medal{background:#ffd23f;color:#1d2a5c}tbody tr:nth-child(2) .medal{background:#d5dbe8;color:#1d2a5c}tbody tr:nth-child(3) .medal{background:#f1b27a;color:#1d2a5c}
+.mini{display:flex;align-items:center;gap:8px}.mini .bar{flex:1;min-width:60px}
+.note{font-size:14px;color:var(--soft);margin-top:10px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tabs button{background:var(--card);border:2px solid var(--line)}
+.tabs button[aria-pressed=true]{background:var(--g);color:#fff;border-color:var(--g)}
+.steps{counter-reset:s;list-style:none;padding:0;display:grid;gap:14px;margin-top:18px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:46px minmax(0,1fr);gap:14px;align-items:start}
+.steps li::before{content:counter(s);width:46px;height:46px;border-radius:50%;background:var(--sun);color:var(--sunInk);display:grid;place-items:center;font:800 21px "Baloo 2",Nunito,sans-serif}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:700;margin-top:10px;min-height:44px}
+.toggle input{width:24px;height:24px;accent-color:var(--blue)}
+.weak{display:grid;gap:10px;margin-top:10px}
+.weak div{background:var(--badbg);border-radius:14px;padding:10px 14px;font-weight:700}
+.wel{position:fixed;inset:0;z-index:50;background:rgba(20,24,50,.55);display:grid;place-items:center;padding:16px;overflow:auto}
+body.wopen{overflow:hidden}
+.wbox{width:min(460px,100%);background:light-dark(#fffaf0,#22243d);border:6px solid #ffd23f;border-radius:32px;padding:22px clamp(16px,4vw,30px) 18px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.wowl{width:96px;height:96px;display:block;margin:0 auto 4px}
+.wchip{display:inline-block;background:var(--coral);color:#fff;font-weight:800;font-size:14px;padding:4px 14px;border-radius:99px;margin-bottom:8px}
+.wbox h2{color:#d6336c;font-size:clamp(26px,6vw,32px)}
+.wsub{font-weight:700;color:var(--soft);margin:8px 0 14px}
+.wmsg{color:var(--bad);font-weight:800;min-height:1.2em;margin:0 0 8px}
+.wbig{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;border-radius:22px;padding:14px 20px;margin-top:12px;color:#fff;min-height:76px}
+.wbig span{font:800 24px/1.1 "Baloo 2",Nunito,sans-serif}.wbig small{font-weight:700;font-size:15px;opacity:.95;margin-top:2px}
+.wbig.green{background:#2f9e44;box-shadow:0 6px 0 #237a34}.wbig.coral{background:#e8384f;box-shadow:0 6px 0 #b02536}
+.wbig:active{transform:translateY(4px);box-shadow:none}
+.wboxes{display:flex;justify-content:center;gap:8px;margin:14px 0 10px}
+.wboxes i{width:44px;height:54px;border-radius:12px;border:3px solid var(--line);background:var(--card);display:grid;place-items:center;font-style:normal;font-size:22px;color:var(--ink)}
+.wboxes i.f{border-color:#e8384f}
+.wpad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wpad button{background:var(--card);border:3px solid var(--line);box-shadow:0 4px 0 var(--line);font:800 26px "Baloo 2",Nunito,sans-serif;min-height:62px}
+.wpad button.go{background:#2f9e44;color:#fff;border-color:#2f9e44;box-shadow:0 4px 0 #237a34;font-size:22px}
+.wnote{font-weight:700;margin:14px 0 4px;font-size:15px}
+.wlinks{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}.wlinks button{background:none;color:var(--blue);text-decoration:underline;font-weight:700;font-size:15px;padding:6px 10px;min-height:40px}
+.linkbox,.linkcell{font-family:ui-monospace,Menlo,monospace;font-size:14px;overflow-wrap:anywhere}
+.linkbox{background:var(--tint);border-radius:12px;padding:10px 12px;margin-top:8px}
+#printArea{display:none}
+@media print{body.printing>*:not(#printArea){display:none!important}body.printing #printArea{display:block}
+ .pcards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ .pcard{border:2px dashed #999;border-radius:14px;padding:10px;display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;break-inside:avoid;color:#000}
+ .pq svg{width:120px;height:120px}.pn{font:800 20px Nunito,sans-serif}.pl{font-size:13px;color:#444}.pm{font-size:18px;margin-top:6px}.pm b{letter-spacing:3px;font-size:22px}.ps{font-size:12px;color:#444;margin-top:4px}}
+footer{padding:22px max(5vw,16px);text-align:center;color:var(--soft);font-size:14px;border-top:2px solid var(--line)}
+@media(max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){
+ .hero .wrap{grid-template-columns:minmax(0,1fr)}
+ .opts{grid-template-columns:minmax(0,1fr)}
+ .qtop{grid-template-columns:minmax(0,1fr)}.qtop svg.owl{display:none}
+ .stop{grid-template-columns:58px minmax(0,1fr)}.stop .ic{width:58px;height:58px;border-radius:18px}.stop .ic svg{width:44px;height:44px}.trail::before{left:26px}
+ .gband .wrap{grid-template-columns:72px minmax(0,1fr)}.gband svg.em{width:72px;height:72px;border-radius:20px}
+ .logo span{display:none}
+ .top nav{order:3;flex-basis:100%}.top .pill{margin-left:auto}
+ table{font-size:14px}th,td{padding:8px 6px}
+ .lvrow{grid-template-columns:5.5em minmax(0,1fr) 4em}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+ <symbol id="owl" viewBox="0 0 100 100">
+  <ellipse cx="50" cy="92" rx="28" ry="5" fill="#000" opacity=".15"/>
+  <path d="M24 30 L30 12 L40 26 Z M76 30 L70 12 L60 26 Z" fill="#c9591e"/>
+  <ellipse cx="50" cy="56" rx="32" ry="36" fill="#f07d2e"/><ellipse cx="50" cy="66" rx="20" ry="22" fill="#ffd9a8"/>
+  <path d="M18 56 Q10 72 24 84 Q26 66 22 56 Z M82 56 Q90 72 76 84 Q74 66 78 56 Z" fill="#c9591e"/>
+  <circle cx="37" cy="42" r="13" fill="#fff"/><circle cx="63" cy="42" r="13" fill="#fff"/>
+  <circle cx="39" cy="43" r="6.5" fill="#1d2a5c"/><circle cx="61" cy="43" r="6.5" fill="#1d2a5c"/>
+  <circle cx="41" cy="40.5" r="2.2" fill="#fff"/><circle cx="63" cy="40.5" r="2.2" fill="#fff"/>
+  <path d="M45 52 L55 52 L50 60 Z" fill="#ffb400"/>
+  <path d="M40 90 l-4 4 M44 90 v5 M56 90 v5 M60 90 l4 4" stroke="#ffb400" stroke-width="3" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8z" fill="#f5b301" stroke="#c98a00" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+ <symbol id="star0" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8z" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".35" stroke-linejoin="round"/></symbol>
+</defs></svg>
+
+<header class="top"><div class="wrap">
+ <a class="logo" href="#home"><svg><use href="#owl"/></svg><span>Bé Vui Học</span></a>
+ <nav aria-label="Menu chính">
+  <a href="#home">Trang chủ</a><a href="#lop" id="navGrade">Lớp học</a><a href="#lop-chung">Lớp chung</a><a href="#on-tap">Ôn câu sai</a><a href="#bao-cao">Báo cáo</a><a href="#shop">Đổi quà</a><a href="#rank">Xếp hạng</a><a href="#guide">Hướng dẫn</a>
+ </nav>
+ <div class="pill" title="Số sao đang có"><svg><use href="#star"/></svg><span id="starCount">0</span></div>
+</div></header>
+
+<main>
+<section class="view" id="v-home">
+ <div class="band hero"><div class="wrap">
+  <div>
+   <h1>Học Toán và Tiếng Việt từ lớp 1 đến lớp 5</h1>
+   <p class="lead">Mỗi lớp là một thế giới với cách học riêng. Bài bám theo chương trình GDPT 2018 và bộ sách Kết nối tri thức với cuộc sống.</p>
+   <p class="hello" id="hello">Bé tên là gì nhỉ?</p>
+   <form class="namebox" id="nameForm">
+    <input id="nameIn" maxlength="24" placeholder="Nhập tên của bé" aria-label="Tên của bé" autocomplete="off">
+    <button class="btn coral" type="submit">Vào học</button>
+   </form>
+   <div class="chips" id="players"></div>
+  </div>
+  <div><div class="grades" id="grades"></div></div>
+ </div></div>
+ <div class="band"><div class="wrap">
+  <h2>Mỗi lớp một cách học</h2>
+  <div class="grid2" id="styles"></div>
+ </div></div>
+</section>
+
+<section class="view" id="v-grade"></section>
+<section class="view" id="v-play"><div class="band"><div class="qwrap" id="play"></div></div></section>
+<section class="view" id="v-result"><div class="band"><div class="res" id="result"></div></div></section>
+<section class="view" id="v-class"><div class="band"><div class="wrap" id="cls"></div></div></section>
+<section class="view" id="v-review"><div class="band"><div class="wrap" style="max-width:860px" id="review"></div></div></section>
+<section class="view" id="v-report"><div class="band"><div class="wrap" id="report"></div></div></section>
+
+<section class="view" id="v-shop"><div class="band"><div class="wrap">
+ <h2>Đổi sao lấy nhãn dán</h2>
+ <p>Dùng sao kiếm được để đổi nhãn dán cho bộ sưu tập của bé.</p>
+ <div class="shop" id="shop"></div>
+</div></div></section>
+
+<section class="view" id="v-rank"><div class="band"><div class="wrap">
+ <h2>Bảng xếp hạng</h2>
+ <p>Xếp theo tổng số sao đã kiếm được.</p>
+ <div id="rank"></div>
+ <p class="note">Bảng gồm các bạn đã chơi trên máy này.</p>
+</div></div></section>
+
+<section class="view" id="v-guide"><div class="band"><div class="wrap" style="max-width:820px">
+ <h2>Hướng dẫn cho bé, phụ huynh và thầy cô</h2>
+ <ol class="steps">
+  <li><div><h3>Nhập tên và chọn lớp</h3>Ở trang chủ, bé nhập tên rồi chọn lớp mình đang học. Nhiều bạn có thể dùng chung một máy.</div></li>
+  <li><div><h3>Đi qua 6 chặng</h3>Mỗi chặng có một trạm Toán và một trạm Tiếng Việt theo thứ tự bài học trong sách. Làm đúng từ 60% trở lên ở cả hai trạm để mở chặng sau.</div></li>
+  <li><div><h3>Làm bài kiểm tra</h3>Mỗi lớp có bài kiểm tra giữa năm và cuối năm cho từng môn. Đề trộn câu ở 3 mức theo Thông tư 27/2020: nhận biết (khoảng 50%), kết nối (khoảng 30%), vận dụng (khoảng 20%). Trong lúc làm bài không báo đúng sai; nộp bài xong mới chấm và chữa từng câu.</div></li>
+  <li><div><h3>Ôn câu sai</h3>Câu nào bé làm sai sẽ vào mục Ôn câu sai. Làm đúng thì câu đó quay lại sau 1 ngày, 3 ngày, rồi 7 ngày, cho tới khi bé nhớ chắc.</div></li>
+  <li><div><h3>Vào lớp chung</h3>Thầy cô tạo lớp và gửi mã lớp. Bé nhập mã lớp, chọn tên và mã PIN để vào lớp từ bất kì máy nào. Sao và tiến trình được lưu lâu dài, có bảng xếp hạng tuần, tháng và các đề thi chung cả lớp cùng làm.</div></li>
+  <li><div><h3>Xem báo cáo</h3>Mục Báo cáo cho biết bé đúng bao nhiêu ở từng chủ đề và từng mức, kèm các chủ đề cần luyện thêm. Có nút sao chép để gửi cho thầy cô.</div></li>
+ </ol>
+ <div class="card" style="margin-top:22px">
+  <h3>Cài đặt</h3>
+  <label class="toggle"><input type="checkbox" id="setTimer"> Đếm giờ từng câu ở lớp 3</label>
+  <label class="toggle"><input type="checkbox" id="setSound"> Âm thanh khi trả lời</label>
+  <label class="toggle"><input type="checkbox" id="setSpeak"> Tự đọc câu hỏi ở lớp 1 và lớp 2</label>
+  <p class="note">Câu Toán được tạo ngẫu nhiên nên mỗi lần là một đề mới. Câu Tiếng Việt và các đoạn đọc hiểu do Bé Vui Học tự soạn theo dạng bài trong sách. Tiến trình được lưu trong trình duyệt của máy đang dùng.</p>
+ </div>
+</div></div></section>
+</main>
+<div id="welcome"></div><div id="printArea"></div>
+<footer>Bé Vui Học · Luyện Toán và Tiếng Việt tiểu học theo chương trình GDPT 2018</footer>
+
+<script>
+window.BV={G:{},grade(n,o){this.G[n]=o}};
+{
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rd=x=>Math.round(x*10000)/10000;
+const f=n=>{if(typeof n!=="number")return String(n);const s=String(rd(n));let[i,d]=s.split(".");const neg=i[0]==="-";if(neg)i=i.slice(1);if(i.length>4)i=i.replace(/\B(?=(\d{3})+(?!\d))/g," ");return(neg?"-":"")+i+(d?","+d:"")};
+const num=(q,a,o={})=>{a=rd(a);const set=new Set([a]),dec=!Number.isInteger(a);
+ const ds=dec?shuffle([0.1,-0.1,1,-1,0.01,-0.01,rd(a*9),rd(-a*0.9)]):a>=1000?shuffle([1,-1,10,-10,100,-100,1000,-1000]):a>=100?shuffle([1,-1,10,-10,100,-100,2,-2]):shuffle([1,-1,2,-2,10,-10,3,-3,5,-5]);
+ for(const d of ds){if(set.size>=4)break;const v=rd(a+d);if(v>=0)set.add(v)}let k=2;while(set.size<4){set.add(rd(a+k));k++}
+ return Object.assign({t:"mcq",q,a:f(a),opts:shuffle([...set]).map(f),num:true},o)};
+const mc=(q,a,wr,o={})=>{a=String(a);const w=[...new Set(wr.map(String))].filter(x=>x!==a).slice(0,3);return Object.assign({t:"mcq",q,a,opts:shuffle([a,...w])},o)};
+const inp=(q,a,o={})=>Object.assign({t:"in",q,a:f(a),num:typeof a==="number"},o);
+const cmp=(q,x,y,o={})=>{const a=x>y?">":x<y?"<":"=";return Object.assign({t:"mcq",q,a,opts:[">","<","="]},o)};
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const NAMES=["Lan","Minh","An","Hoa","Nam","Mai","Bình","Hà","Khôi","Ngọc","Phúc","Linh"];
+const name=()=>pick(NAMES);
+BV.H={R,pick,shuffle,f,num,mc,inp,cmp,gcd,name,rd};
+/* Công cụ soạn câu Tiếng Việt từ danh sách (không dùng ngẫu nhiên để mọi máy có cùng ngân hàng câu) */
+const pick3=(arr,i,ex)=>{const w=[],L=arr.length;for(let k=0;w.length<3&&k<L*3;k++){const x=arr[(i*3+k*5+k*k)%L];if(x!==ex&&!w.includes(x))w.push(x)}for(let k=0;w.length<3&&k<L;k++){const x=arr[k];if(x!==ex&&!w.includes(x))w.push(x)}return w};
+BV.H.pick3=pick3;
+BV.H.cls=(m,q,right,wrong)=>right.map((r,i)=>[m,q,r,...pick3(wrong,i,r)]);
+BV.H.pairQ=(m,fmt,pairs)=>{const ans=pairs.map(p=>p[1]);return pairs.map(([w,a],i)=>[m,fmt.replace("%",w),a,...pick3(ans,i,a)])};
+BV.H.typeQ=(m,fmt,groups,extra=[])=>{const ts=Object.keys(groups);return ts.flatMap(t=>groups[t].map(s=>[m,fmt.replace("%",s),t,...[...ts.filter(x=>x!==t),...extra].slice(0,3)]))};
+BV.H.sp=(m,list,q="Từ nào viết đúng chính tả?")=>list.map(s=>[m,q,...s.split("|")]);
+BV.H.capV=name=>{const cap=w=>w.split("-").map((s,i)=>i===0?s.charAt(0).toUpperCase()+s.slice(1):s).join("-");const parts=name.split(" ");const v=[name.toLowerCase(),parts.map((p,i)=>i===0?p:p.toLowerCase()).join(" "),parts.map((p,i)=>i===parts.length-1?p.toLowerCase():p).join(" "),name.replace(/-/g," "),parts.map(p=>p.split("-").map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join("-")).join(" "),parts.map(cap).join(" ").toUpperCase()];return[...new Set(v)].filter(x=>x!==name).slice(0,3)};
+}
+</script>
+<script src="data/lop1.js"></script>
+<script src="data/lop1-them.js"></script>
+<script src="data/lop2.js"></script>
+<script src="data/lop2-them.js"></script>
+<script src="data/lop3.js"></script>
+<script src="data/lop3-them.js"></script>
+<script src="data/lop4.js"></script>
+<script src="data/lop4-them.js"></script>
+<script src="data/lop5.js"></script>
+<script src="data/lop5-them.js"></script>
+<script src="firebase-config.js"></script>
+<script src="qrcode.js"></script>
+<script src="cloud.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
