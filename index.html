@@ -328,16 +328,16 @@ BV.H.sp=(m,list,q="Từ nào viết đúng chính tả?")=>list.map(s=>[m,q,...s
 BV.H.capV=name=>{const cap=w=>w.split("-").map((s,i)=>i===0?s.charAt(0).toUpperCase()+s.slice(1):s).join("-");const parts=name.split(" ");const v=[name.toLowerCase(),parts.map((p,i)=>i===0?p:p.toLowerCase()).join(" "),parts.map((p,i)=>i===parts.length-1?p.toLowerCase():p).join(" "),name.replace(/-/g," "),parts.map(p=>p.split("-").map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join("-")).join(" "),parts.map(cap).join(" ").toUpperCase()];return[...new Set(v)].filter(x=>x!==name).slice(0,3)};
 }
 </script>
-<script src="data/lop1.js"></script>
-<script src="data/lop1-them.js"></script>
-<script src="data/lop2.js"></script>
-<script src="data/lop2-them.js"></script>
-<script src="data/lop3.js"></script>
-<script src="data/lop3-them.js"></script>
-<script src="data/lop4.js"></script>
-<script src="data/lop4-them.js"></script>
-<script src="data/lop5.js"></script>
-<script src="data/lop5-them.js"></script>
+<script src="lop1.js"></script>
+<script src="lop1-them.js"></script>
+<script src="lop2.js"></script>
+<script src="lop2-them.js"></script>
+<script src="lop3.js"></script>
+<script src="lop3-them.js"></script>
+<script src="lop4.js"></script>
+<script src="lop4-them.js"></script>
+<script src="lop5.js"></script>
+<script src="lop5-them.js"></script>
 <script src="firebase-config.js"></script>
 <script src="qrcode.js"></script>
 <script src="cloud.js"></script>
