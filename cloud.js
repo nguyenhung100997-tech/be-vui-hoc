@@ -29,7 +29,7 @@ function memAdapter(){const M=window.BV_MEMSTORE||new Map();const cp=x=>x==null?
  async del(p){chk("delete",p);M.delete(p)},
  async inc(p,incs,extra={}){const o=Object.assign({},M.get(p)||{},cp(extra));for(const k in incs)o[k]=(o[k]||0)+incs[k];chk(M.has(p)?"update":"create",p,o);M.set(p,o)},
  async add(p,d){const n=(M.get("__n")||0)+1;const id="id"+n;chk("create",p+"/"+id,cp(d));M.set("__n",n);M.set(p+"/"+id,cp(d));return id},
- async create(p,d){if(M.has(p))throw new Error("exists");chk("create",p,cp(d));M.set(p,cp(d))},
+ async create(p,d){chk("get",p);if(M.has(p))throw new Error("exists");chk("create",p,cp(d));M.set(p,cp(d))},
  async list(p,o={}){chk("list",p);const depth=p.split("/").length+1;let r=[...M.entries()].filter(([k])=>k.startsWith(p+"/")&&k.split("/").length===depth).map(([k,v])=>Object.assign({id:k.split("/").pop()},cp(v)));if(o.order)r.sort((a,b)=>(a[o.order]>b[o.order]?1:-1)*(o.desc?-1:1));if(o.limit)r=r.slice(0,o.limit);return r}}}
 
 const pad=n=>String(n).padStart(2,"0");
@@ -62,7 +62,8 @@ const CL={ready:false,err:null,hash,sha,deny,
  forget(){setCred(null)},
  /* ---------- quản trị bằng key gốc ---------- */
  async adminSetup(master){if(String(master).length<8)throw new Error("Key gốc cần ít nhất 8 kí tự.");if(!(await this.init()))throw new Error("Chưa kết nối được máy chủ.");const h=await sha("bvh-master:"+master);
-  try{await this.db.create("config/master",{h,t:Date.now()})}catch(e){if(String(e.message)==="exists"||deny(e))throw new Error("Key gốc đã được tạo từ trước. Hãy dùng ô Đăng nhập.");throw e}return this.adminLogin(master)},
+  /* ghi thẳng (không đọc trước vì luật cấm đọc key gốc); máy chủ chỉ cho tạo khi chưa có */
+  try{await this.db.put("config/master",{h,t:Date.now()})}catch(e){if(String(e.message)==="exists")throw new Error("Key gốc đã được tạo từ trước. Hãy dùng ô Đăng nhập.");if(deny(e))throw new Error("Máy chủ từ chối tạo key gốc. Có thể key gốc đã có, hoặc luật bảo mật mới (tệp firestore.rules) chưa được dán vào Firebase → Firestore → Rules.");throw e}return this.adminLogin(master)},
  async adminLogin(master){if(!(await this.init()))throw new Error("Chưa kết nối được máy chủ.");const h=await sha("bvh-master:"+master);
   try{await this.db.put(`admins/${this.db.uid()}`,{h,t:Date.now()})}catch(e){if(deny(e))throw new Error("Key gốc chưa đúng.");throw e}
   const a=await this.access();if(!a.admin)throw new Error("Key gốc chưa đúng.");return a},
