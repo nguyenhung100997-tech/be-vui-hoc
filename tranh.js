@@ -34,7 +34,7 @@ chuoi:`<path d="M24 22q2 50 60 54q-36-14-50-54z" fill="#ffd43b" stroke="#f5b301"
 dua:`<path d="M8 38a42 42 0 0 0 84 0z" fill="#2f9e44"/><path d="M14 38a36 36 0 0 0 72 0z" fill="#ebfbee"/><path d="M18 38a32 32 0 0 0 64 0z" fill="#ff6b6b"/><g fill="${IN}"><ellipse cx="38" cy="50" rx="2" ry="3"/><ellipse cx="50" cy="56" rx="2" ry="3"/><ellipse cx="62" cy="50" rx="2" ry="3"/><ellipse cx="44" cy="62" rx="2" ry="3"/><ellipse cx="56" cy="62" rx="2" ry="3"/></g>`,
 nho:`<path d="M50 14v12" stroke="#6b3e1e" stroke-width="4"/><path d="M52 18q16-10 26 2q-14 6-26-2z" fill="#2f9e44"/><g fill="#9c36b5">${[[38,34],[52,32],[66,34],[44,46],[58,46],[72,46],[36,47],[50,58],[64,58],[44,70],[58,70],[51,82]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="8"/>`).join("")}</g><g fill="#fff" opacity=".35"><circle cx="49" cy="29" r="2"/><circle cx="41" cy="43" r="2"/><circle cx="47" cy="55" r="2"/></g>`,
 xoai:`<path d="M30 32c30-20 62 8 52 40c-8 24-48 26-56 0c-4-14-6-30 4-40z" fill="#fcc419"/><path d="M68 70c-6 10-24 12-34 4" stroke="#f08c00" stroke-width="4" fill="none" opacity=".5"/><path d="M34 30q-2-10 6-14" stroke="#6b3e1e" stroke-width="3" fill="none"/><ellipse cx="50" cy="18" rx="11" ry="5" fill="#2f9e44" transform="rotate(10 50 18)"/>`,
-khe:`<path d="M50 12l9 25 27 2-21 17 8 27-23-15-23 15 8-27-21-17 27-2z" fill="#c0eb75" stroke="#94d82d" stroke-width="3" stroke-linejoin="round"/><path d="M50 50L50 12M50 50l36-11M50 50l22 33M50 50L28 83M50 50L14 39" stroke="#94d82d" stroke-width="1.5"/>`,
+khe:`<defs><linearGradient id="kh1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f99a"/><stop offset=".55" stop-color="#c9e04a"/><stop offset="1" stop-color="#86a91e"/></linearGradient><radialGradient id="kh2" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#fffbd1"/><stop offset=".6" stop-color="#f2e56b"/><stop offset="1" stop-color="#c7b52a"/></radialGradient></defs><ellipse cx="50" cy="93" rx="30" ry="4" fill="#000" opacity=".12"/><path d="M20 40Q30 14 58 16Q84 20 86 44Q88 62 70 72Q48 84 30 72Q14 60 20 40z" fill="url(#kh1)" stroke="#7a9a16" stroke-width="2"/><path d="M30 26Q50 34 84 40M24 54Q50 52 78 66M40 18Q52 44 56 78" stroke="#a6c22a" stroke-width="3" fill="none" opacity=".8"/><path d="M58 15q2-8 9-10" stroke="#6b4a1e" stroke-width="3" fill="none" stroke-linecap="round"/><g transform="translate(24 50)"><path d="M26 2l7 15 17 2-13 11 4 17-15-9-15 9 4-17L2 19l17-2z" fill="url(#kh2)" stroke="#b5a21f" stroke-width="2" stroke-linejoin="round"/><path d="M26 22L26 2M26 22l24-3M26 22l11 16M26 22L15 38M26 22L2 19" stroke="#d9c84a" stroke-width="1.4"/><circle cx="26" cy="22" r="3" fill="#fff8c4"/><path d="M14 14q6-6 12-6" stroke="#fff" stroke-width="2.5" fill="none" opacity=".7" stroke-linecap="round"/></g>`,
 ngo:`<path d="M50 92q-26-10-22-40q10 20 22 40zM50 92q26-10 22-40q-10 20-22 40z" fill="#69db7c"/><ellipse cx="50" cy="48" rx="16" ry="36" fill="#ffd43b"/><g fill="#fab005">${[0,1,2,3,4,5,6].map(r=>[0,1,2].map(c=>`<circle cx="${43+c*7}" cy="${22+r*8}" r="2.6"/>`).join("")).join("")}</g>`,
 carot:`<path d="M48 22q-10-16-4-20q6 6 6 18M52 22q4-16 12-18q2 10-8 20" fill="#51cf66"/><path d="M50 94L34 26h32z" fill="#ff922b" stroke-linejoin="round"/><path d="M40 40h8M44 54h8M46 68h6" stroke="#e8590c" stroke-width="2.5" stroke-linecap="round"/>`,
 trung:`<ellipse cx="50" cy="56" rx="25" ry="33" fill="#fff4e6" stroke="#e9d8c4" stroke-width="2.5"/><ellipse cx="40" cy="42" rx="5" ry="9" fill="#fff" opacity=".9"/>`,
@@ -46,7 +46,7 @@ cap:`<path d="M36 32q0-16 14-16t14 16" stroke="#364fc7" stroke-width="5" fill="n
 vo:`<rect x="24" y="14" width="54" height="74" rx="4" fill="#63e6be"/><rect x="24" y="14" width="8" height="74" fill="#38d9a9"/><rect x="38" y="26" width="32" height="16" rx="3" fill="#fff"/><path d="M42 32h24M42 37h16" stroke="#adb5bd" stroke-width="2"/>`,
 keo:`<path d="M50 52L82 16M50 52L18 16" stroke="#adb5bd" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="52" r="3" fill="${IN}"/><circle cx="34" cy="76" r="12" fill="none" stroke="#e8453c" stroke-width="7"/><circle cx="66" cy="76" r="12" fill="none" stroke="#e8453c" stroke-width="7"/><path d="M50 52L38 66M50 52L62 66" stroke="#e8453c" stroke-width="7" stroke-linecap="round"/>`,
 ghe:SH+`<rect x="30" y="12" width="40" height="40" rx="6" fill="#c08552"/><rect x="36" y="18" width="28" height="28" rx="4" fill="#d9a066"/><rect x="24" y="50" width="52" height="10" rx="3" fill="#8b5a2b"/><path d="M30 60v32M70 60v32" stroke="#8b5a2b" stroke-width="6" stroke-linecap="round"/>`,
-ban:SH+`<rect x="10" y="34" width="80" height="12" rx="3" fill="#c08552"/><rect x="14" y="44" width="72" height="6" fill="#8b5a2b"/><path d="M18 50v42M82 50v42" stroke="#8b5a2b" stroke-width="7" stroke-linecap="round"/><rect x="58" y="22" width="20" height="12" rx="2" fill="#4dabf7"/>`,
+ban:`<defs><linearGradient id="bn1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0a46a"/><stop offset="1" stop-color="#b7743d"/></linearGradient><linearGradient id="bn2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9a5a2a"/><stop offset=".5" stop-color="#c07d44"/><stop offset="1" stop-color="#8a4f22"/></linearGradient></defs><ellipse cx="50" cy="92" rx="40" ry="5" fill="#000" opacity=".12"/><path d="M8 40L26 26H92L76 40z" fill="url(#bn1)" stroke="#8a4f22" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 40H76V48H8z" fill="#a8652f"/><path d="M76 40L92 26V34L76 48z" fill="#8a4f22"/><rect x="11" y="47" width="7" height="42" rx="2.5" fill="url(#bn2)"/><rect x="67" y="47" width="7" height="42" rx="2.5" fill="url(#bn2)"/><rect x="84" y="31" width="5" height="44" rx="2" fill="#7a4520"/><path d="M30 31h40" stroke="#f3c48f" stroke-width="2.5" stroke-linecap="round" opacity=".8"/><g transform="translate(46 15)"><rect x="0" y="6" width="22" height="14" rx="2" fill="#4dabf7" transform="skewX(-25)"/><rect x="2" y="7" width="18" height="3" fill="#fff" opacity=".6" transform="skewX(-25)"/></g>`,
 dongho:`<circle cx="26" cy="22" r="10" fill="#fab005"/><circle cx="74" cy="22" r="10" fill="#fab005"/><path d="M30 84l-8 10M70 84l8 10" stroke="#495057" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="54" r="34" fill="#e8453c"/><circle cx="50" cy="54" r="27" fill="#fff"/><path d="M50 54V36M50 54l12 8" stroke="${IN}" stroke-width="4" stroke-linecap="round"/><g fill="${IN}"><circle cx="50" cy="31" r="2"/><circle cx="73" cy="54" r="2"/><circle cx="50" cy="77" r="2"/><circle cx="27" cy="54" r="2"/></g>`,
 dieu:`<path d="M50 8l30 32-30 40-30-40z" fill="#ff6b6b"/><path d="M50 8v72M20 40h60" stroke="#fff" stroke-width="2"/><path d="M50 8l30 32H50z" fill="#ffd43b"/><path d="M50 80q-8 6 0 10q8 4 0 10" stroke="#495057" stroke-width="2" fill="none"/><path d="M44 88l6-3v6zM56 92l-6-3v6z" fill="#4dabf7"/>`,
 o:`<path d="M10 52a40 40 0 0 1 80 0q-10-8-20 0q-10-8-20 0q-10-8-20 0q-10-8-20 0z" fill="#cc5de8"/><path d="M30 52a40 40 0 0 1 20-40a40 40 0 0 1 20 40" fill="#e599f7"/><path d="M50 52v32q0 8-8 8q-6 0-6-6" stroke="${IN}" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="50" cy="12" r="3" fill="${IN}"/>`,
@@ -145,7 +145,94 @@ hoa|bông hoa|hoa|h|oa|ngang|thiên nhiên|Bông hoa nở trong vườn.|thơm n
 la|chiếc lá|lá|l|a|sắc|thiên nhiên|Chiếc lá có màu xanh mướt.|xanh mướt|rơi|Chiếc lá vẫy tay chào gió.|Chiếc lá như con thuyền nhỏ.
 nui|ngọn núi|núi|n|ui|sắc|thiên nhiên|Ngọn núi cao vút.|cao vút|||Núi cao như bức tường khổng lồ.
 song|dòng sông|sông|s|ông|ngang|thiên nhiên|Dòng sông chảy quanh làng.|hiền hòa|chảy|Dòng sông mải miết đi ra biển.|Dòng sông như dải lụa mềm.
-lua|ngọn lửa|lửa|l|ưa|hỏi|thiên nhiên|Ngọn lửa cháy bập bùng.|nóng rực|cháy|Ngọn lửa nhảy múa trong bếp.|Lửa đỏ như hoa phượng.`;
+lua|ngọn lửa|lửa|l|ưa|hỏi|thiên nhiên|Ngọn lửa cháy bập bùng.|nóng rực|cháy|Ngọn lửa nhảy múa trong bếp.|Lửa đỏ như hoa phượng.
+begai|bé gái|gái|g|ai|sắc|người|Bé gái buộc tóc gọn gàng, cười thật tươi.|xinh xắn|vẫy tay chào||Nụ cười của bé tươi như hoa.
+betrai|bé trai|trai|tr|ai|ngang|người|Bé trai đeo cặp đến trường.|nhanh nhẹn|chạy nhảy||
+ba|bà|bà|b|a|huyền|người|Bà có mái tóc bạc trắng.|hiền hậu|kể chuyện||Tóc bà trắng như mây.
+ongnoi|ông|ông||ông|ngang|người|Ông đọc báo bên cửa sổ.|hiền từ|đọc báo||
+me|mẹ|mẹ|m|e|nặng|người|Mẹ nấu cơm cho cả nhà.|dịu dàng|nấu cơm||
+bo2|bố|bố|b|ô|sắc|người|Bố đi làm về, bế bé lên.|vui tính|đi làm||
+embe|em bé|bé|b|e|sắc|người|Em bé ngủ ngon trong nôi.|bụ bẫm|tập nói||Má em bé hồng như quả đào.
+cogiao|cô giáo|giáo|gi|ao|sắc|người|Cô giáo dạy chúng em học chữ.|dịu dàng|giảng bài||
+thaygiao|thầy giáo|thầy|th|ây|huyền|người|Thầy giáo đứng trên bục giảng.|tận tụy|giảng bài||
+bacsi|bác sĩ|sĩ|s|i|ngã|người|Bác sĩ khám bệnh cho mọi người.|tận tình|khám bệnh||
+nongdan|bác nông dân|nông|n|ông|ngang|người|Bác nông dân cày ruộng, trồng lúa.|cần cù|trồng lúa||
+cuuhoa|chú lính cứu hoả|lính|l|inh|sắc|người|Chú lính cứu hoả dập tắt đám cháy.|dũng cảm|chữa cháy||
+daubep|chú đầu bếp|bếp|b|êp|sắc|người|Chú đầu bếp nấu những món ăn ngon.|khéo tay|nấu ăn||
+phicong|cô phi công|công|c|ông|ngang|người|Cô phi công lái máy bay trên bầu trời.|bình tĩnh|lái máy bay||
+thoxay|chú thợ xây|thợ|th|ơ|nặng|người|Chú thợ xây đội mũ bảo hộ đi xây nhà.|chăm chỉ|xây nhà||
+le|quả lê|lê|l|ê|ngang|quả|Quả lê có vỏ màu vàng xanh.|mát ngọt|||
+dua2|quả dứa|dứa|d|ưa|sắc|quả|Quả dứa có nhiều mắt và một chùm lá trên đầu.|thơm lừng|||Chùm lá dứa như chiếc vương miện.
+dua3|quả dừa|dừa|d|ưa|huyền|quả|Quả dừa có nước ngọt mát bên trong.|mát lành|||
+chanh|quả chanh|chanh|ch|anh|ngang|quả|Quả chanh có vị chua.|chua|||
+dau|quả dâu tây|dâu|d|âu|ngang|quả|Quả dâu tây màu đỏ, có hạt li ti.|chua ngọt|||Quả dâu đỏ như viên ngọc nhỏ.
+dao|quả đào|đào|đ|ao|huyền|quả|Quả đào có vỏ mịn màu hồng.|mọng nước|||
+anhdao|quả anh đào|anh||anh|ngang|quả|Quả anh đào nhỏ xinh, đỏ mọng.|đỏ mọng|||
+bo3|quả bơ|bơ|b|ơ|ngang|quả|Quả bơ có ruột màu xanh vàng và hạt to.|béo ngậy|||
+cachua|quả cà chua|chua|ch|ua|ngang|rau củ|Quả cà chua chín có màu đỏ.|đỏ mọng|||
+cai|bắp cải|cải|c|ai|hỏi|rau củ|Bắp cải có nhiều lớp lá cuộn tròn.|xanh mướt|||
+khoai|củ khoai tây|khoai|kh|oai|ngang|rau củ|Củ khoai tây có vỏ màu nâu.|bùi bùi|||
+nam|cây nấm|nấm|n|âm|sắc|rau củ|Cây nấm có chiếc mũ tròn.|xinh xinh|||Cây nấm như chiếc ô nhỏ.
+ot|quả ớt|ớt||ơt|sắc|rau củ|Quả ớt chín có màu đỏ.|cay xè|||
+banhmi|ổ bánh mì|bánh|b|anh|sắc|thức ăn|Ổ bánh mì giòn thơm.|giòn rụm|||
+com|bát cơm|cơm|c|ơm|ngang|thức ăn|Bát cơm trắng nóng hổi.|thơm dẻo|||Hạt cơm trắng như ngọc.
+sua|cốc sữa|sữa|s|ưa|ngã|thức ăn|Cốc sữa giúp bé khỏe mạnh.|thơm ngon|||
+banhkem|bánh sinh nhật|nhật|nh|ât|nặng|thức ăn|Chiếc bánh sinh nhật có nhiều cây nến.|ngọt ngào|||
+kem|cây kem|kem|k|em|ngang|thức ăn|Cây kem mát lạnh ngày hè.|mát lạnh|||
+gau|con gấu|gấu|g|âu|sắc|con vật|Con gấu thích ăn mật ong.|to khỏe|ăn mật ong|Bác gấu nâu ngủ một giấc thật dài.|
+sutu|con sư tử|sư|s|ư|ngang|con vật|Con sư tử có bờm vàng rậm.|oai phong|gầm vang|Ông sư tử ngồi oai vệ trên tảng đá.|
+huou|con hươu cao cổ|hươu|h|ươu|ngang|con vật|Con hươu cao cổ có cái cổ rất dài.|cao lớn|ăn lá cây||Cổ hươu cao như cột điện.
+chuot|con chuột|chuột|ch|uôt|nặng|con vật|Con chuột có cái đuôi dài.|nhanh nhẹn|gặm bánh||
+rua|con rùa|rùa|r|ua|huyền|con vật|Con rùa mang chiếc mai cứng.|chậm chạp|bò chậm|Bác rùa thong thả cõng nhà đi chơi.|
+caheo|con cá heo|heo|h|eo|ngang|con vật|Con cá heo nhảy lên khỏi mặt nước.|thông minh|bơi lội||
+canhcut|chim cánh cụt|cụt|c|ut|nặng|con vật|Chim cánh cụt sống ở xứ lạnh.|đáng yêu|đi lạch bạch||
+cu|con cú mèo|cú|c|u|sắc|con vật|Con cú mèo có đôi mắt tròn to.|tinh mắt|bắt chuột||Mắt cú tròn như hai chiếc đèn.
+soc|con sóc|sóc|s|oc|sắc|con vật|Con sóc có cái đuôi xù.|nhanh nhẹn|nhặt hạt dẻ||
+gacon|con gà con|gà|g|a|huyền|con vật|Con gà con có bộ lông vàng.|bé xíu|kêu chiếp chiếp||Gà con vàng như cục bông.
+de|con dê|dê|d|ê|ngang|con vật|Con dê có bộ râu dài.|nhanh nhẹn|leo dốc||
+cuu|con cừu|cừu|c|ưu|huyền|con vật|Con cừu có bộ lông xoăn trắng.|hiền lành|gặm cỏ||Lông cừu trắng như mây.
+tom|con tôm|tôm|t|ôm|ngang|con vật|Con tôm có nhiều chân và râu dài.|bé nhỏ|búng càng||
+bachtuoc|con bạch tuộc|tuộc|t|uôc|nặng|con vật|Con bạch tuộc có tám cái tua dài.|mềm mại|bơi||
+khunglong|con khủng long|long|l|ong|ngang|con vật|Khủng long là loài vật sống từ thời xa xưa.|khổng lồ|||
+cavoi|con cá voi|voi|v|oi|ngang|con vật|Cá voi là loài vật to lớn sống dưới biển.|khổng lồ|phun nước||
+vet|con vẹt|vẹt|v|et|nặng|con vật|Con vẹt có bộ lông sặc sỡ.|sặc sỡ|nói theo người||
+nhim|con nhím|nhím|nh|im|sắc|con vật|Con nhím có bộ lông nhọn như kim.|gai góc|cuộn tròn||
+sau|con sâu|sâu|s|âu|ngang|con vật|Con sâu bò trên chiếc lá.|bé xíu|ăn lá||
+chimcong|con chim công|công|c|ông|ngang|con vật|Chim công xoè đuôi rực rỡ.|lộng lẫy|múa||Đuôi công xoè như chiếc quạt.
+maybay|máy bay|bay|b|ay|ngang|phương tiện|Máy bay bay trên bầu trời.|nhanh|bay||Máy bay như con chim sắt.
+tauhoa|tàu hoả|tàu|t|au|huyền|phương tiện|Tàu hoả chạy trên đường ray.|dài|chạy xình xịch||
+xebuyt|xe buýt|buýt|b|uyt|sắc|phương tiện|Xe buýt chở nhiều hành khách.|to lớn|chở khách||
+gaubong|gấu bông|bông|b|ông|ngang|đồ chơi|Con gấu bông mềm mại.|mềm mại|||
+qua|hộp quà|quà|qu|a|huyền|đồ chơi|Hộp quà có chiếc nơ đỏ.|bất ngờ|||
+butmau|bút màu|màu|m|au|huyền|đồ dùng học tập|Bút màu giúp bé tô tranh.|nhiều màu|||
+tivi|cái ti vi|vi|v|i|ngang|đồ dùng trong nhà|Cái ti vi chiếu phim hoạt hình.|hiện đại|||
+maytinh|máy tính|tính|t|inh|sắc|đồ dùng học tập|Máy tính giúp em học và tra cứu.|hiện đại|||
+dan|cây đàn ghi-ta|đàn|đ|an|huyền|đồ chơi|Cây đàn ghi-ta có sáu dây.|du dương|||
+ken|cái kèn|kèn|k|en|huyền|đồ chơi|Cái kèn thổi te te.|vang to|kêu te te||
+bongbay|quả bóng bay|bóng|b|ong|sắc|đồ chơi|Quả bóng bay lơ lửng trên cao.|nhẹ tênh|bay||
+amtra|ấm trà|ấm||âm|sắc|đồ dùng trong nhà|Ông pha trà trong chiếc ấm.|ấm nóng|||
+banchai|bàn chải đánh răng|chải|ch|ai|hỏi|đồ dùng cá nhân|Bé đánh răng bằng bàn chải mỗi sáng.|sạch sẽ|||
+xaphong|bánh xà phòng|phòng|ph|ong|huyền|đồ dùng cá nhân|Bé rửa tay bằng xà phòng.|thơm tho|||
+giay|đôi giày|giày|gi|ay|huyền|đồ dùng cá nhân|Đôi giày giúp bé đi học.|êm chân|||
+ao|cái áo|áo||ao|sắc|đồ dùng cá nhân|Cái áo mới của bé màu xanh lá.|mới tinh|||
+vay|chiếc váy|váy|v|ay|sắc|đồ dùng cá nhân|Chiếc váy màu xanh xinh xắn.|xinh xắn|||
+kinh|cái kính|kính|k|inh|sắc|đồ dùng cá nhân|Cái kính giúp ông đọc báo.|trong suốt|||
+thia|cái thìa|thìa|th|ia|huyền|đồ dùng trong nhà|Bé dùng thìa để xúc cơm.|nhỏ xinh|||
+bat|cái bát|bát|b|at|sắc|đồ dùng trong nhà|Cái bát để đựng cơm.|tròn trịa|||
+quat|cái quạt|quạt|qu|at|nặng|đồ dùng trong nhà|Cái quạt làm mát ngày hè.|mát rượi|||
+cauvong|cầu vồng|vồng|v|ông|huyền|thiên nhiên|Cầu vồng có bảy màu rực rỡ.|rực rỡ|||Cầu vồng như chiếc cầu bảy màu.
+tuyet|bông tuyết|tuyết|t|uyêt|sắc|thiên nhiên|Bông tuyết trắng rơi vào mùa đông.|lạnh giá|rơi||
+bien|biển|biển|b|iên|hỏi|thiên nhiên|Biển rộng mênh mông, sóng vỗ rì rào.|mênh mông|vỗ sóng|Biển hát rì rào suốt ngày đêm.|Biển xanh như tấm thảm khổng lồ.
+traidat|Trái Đất|đất|đ|ât|sắc|thiên nhiên|Trái Đất là ngôi nhà chung của chúng ta.|tròn|quay||Trái Đất tròn như quả bóng xanh.
+set|tia sét|sét|s|et|sắc|thiên nhiên|Tia sét loé sáng khi trời giông.|chói loà|loé sáng||
+hoahong|bông hoa hồng|hồng|h|ông|huyền|thiên nhiên|Bông hoa hồng có màu đỏ thắm.|thơm ngát|nở||
+sen|bông hoa sen|sen|s|en|ngang|thiên nhiên|Hoa sen nở trong đầm.|thanh khiết|nở||
+huongduong|hoa hướng dương|dương|d|ương|ngang|thiên nhiên|Hoa hướng dương luôn hướng về mặt trời.|vàng rực|nở||Hoa hướng dương như ông mặt trời nhỏ.
+xuongrong|cây xương rồng|rồng|r|ông|huyền|thiên nhiên|Cây xương rồng sống được ở nơi khô hạn.|gai góc|||
+thong|cây thông|thông|th|ông|ngang|thiên nhiên|Cây thông xanh quanh năm.|xanh tốt|||
+luagao|bông lúa|lúa|l|ua|sắc|thiên nhiên|Bông lúa chín vàng trĩu hạt.|vàng óng|||Bông lúa cong như lưỡi liềm.`;
+/* hình 3D (hinh.js) thay cho hình vẽ tay; hình nào chưa có thì giữ hình vẽ */
+if(window.BV&&BV.IMG)for(const k in BV.IMG)S[k]=`<image href="${BV.IMG[k]}" x="3" y="3" width="94" height="94"/>`;
 const P={};T.split("\n").forEach(l=>{const[id,n,w,am,van,th,cat,d,t,h,nh,ss]=l.split("|");P[id]={id,n,w,am,van,th,cat,d,t,h,nh,ss,svg:S[id]}});
 const img=(id,x,y,s)=>`<svg x="${x}" y="${y}" width="${s}" height="${s}" viewBox="0 0 100 100">${S[id]||""}</svg>`;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));

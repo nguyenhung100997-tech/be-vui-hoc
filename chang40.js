@@ -15,7 +15,18 @@ BV.ZONES=ZONES;
 BV.examStages=k=>k===3?[...Array(20).keys()]:[...Array(40).keys()];
 
 /* đọc một truyện viết gọn: "Tên|id1,id2" , "đoạn văn", "m|câu hỏi|đáp án|sai|sai|sai", ... */
-BV.story=(head,text,...qs)=>{const[t,ids]=head.split("|");return{t,ids:(ids||"").split(",").filter(Boolean),p:text,q:qs.map(s=>{const a=s.split("|");if(a[0]==="i")return["i",+a[1],a[2],a[3]];return[+a[0],...a.slice(1)]})}};
+/* tìm nhân vật người trong truyện để thêm hình người */
+const PPL=[["bà","ba",/^\s+con/],["ông","ongnoi",/^\s+(mặt|trăng|sao|bụt|tiên|lão|vua)/],["mẹ","me"],["bố","bo2"],["cha","bo2"],["cô giáo","cogiao"],["thầy","thaygiao"],["bác sĩ","bacsi"],["nông dân","nongdan"],["em bé","embe"],["cứu hoả","cuuhoa"],["phi công","phicong"],["thợ xây","thoxay"]];
+const GIRL=["Lan","Hoa","Mai","Na","Hà","Linh","Thảo","Vy","Ngân","Hằng","Bống","Phương","Mỷ","Nga","Hương","Y Lan","Amina"],BOY=["Nam","Minh","Bình","Tú","Hùng","Khôi","Tuấn","Bin","Bon","Quân","Khoa","Tùng","Dũng","Hải","Tí","Bi","Hưng","Quang","Ken","Tâm"];
+const isL=c=>!!c&&c.toLowerCase()!==c.toUpperCase();
+function findWord(text,w,cs){const T=cs?text:text.toLowerCase(),W=cs?w:w.toLowerCase();let i=-1;while((i=T.indexOf(W,i+1))>=0){if(isL(T[i-1])||isL(T[i+W.length]))continue;return i}return -1}
+function people(t,text){const all=t+". "+text,hits=[];
+ for(const[w,id,neg]of PPL){let i=-1,T=all.toLowerCase();while((i=T.indexOf(w,i+1))>=0){if(isL(T[i-1])||isL(T[i+w.length]))continue;if(neg&&neg.test(T.slice(i+w.length)))continue;hits.push([i,id]);break}}
+ for(const n of GIRL){const i=findWord(all,n,true);if(i>=0&&!/^ Nội/.test(all.slice(i+n.length)))hits.push([i,"begai"])}
+ for(const n of BOY){const i=findWord(all,n,true);if(i>=0&&!/(Việt|miền|phương|phía) $/.test(all.slice(Math.max(0,i-8),i)))hits.push([i,"betrai"])}
+ hits.sort((a,b)=>a[0]-b[0]);return[...new Set(hits.map(h=>h[1]))]}
+BV.story=(head,text,...qs)=>{const[t,idsS]=head.split("|");let ids=(idsS||"").split(",").filter(Boolean);const pp=people(t,text);if(pp.length){const k=ids.length>=3?1:2;ids=[...new Set([...pp.slice(0,k),...ids])].slice(0,3)}
+ return{t,ids,p:text,q:qs.map(s=>{const a=s.split("|");if(a[0]==="i")return["i",+a[1],a[2],a[3]];return[+a[0],...a.slice(1)]})}};
 
 BV.def40=(g,C)=>{
  const OLD=BV.G[g];const SK=C.SK,TV=C.TV,ST=C.ST||[],rows=C.rows;

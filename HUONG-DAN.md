@@ -191,6 +191,8 @@ Bé đã học bản 6 chặng cũ: sao vẫn giữ nguyên, các chặng tươn
 | `chang40.js` | Bộ máy 40 chặng: 35 tuần học theo sách và 5 chặng ôn tập |
 | `data/lopN-40.js` | Nội dung 40 chặng của lớp N: kỹ năng Toán, chủ đề Tiếng Việt, truyện đọc hiểu, bài nâng cao |
 | `baihoc40.js` | Tự dựng bài học có hình (thẻ học + 12 bài có tranh) cho cả 200 chặng |
+| `hinh.js` | Bộ 154 hình 3D (con vật, người, hoa quả, đồ vật, thiên nhiên) – Microsoft Fluent Emoji, giấy phép MIT |
+| `GIAY-PHEP-HINH.txt` | Giấy phép của bộ hình 3D (giữ tệp này cùng trang) |
 | `tranh.js` | Bộ tranh minh hoạ tự vẽ (con vật, hoa quả, đồ vật, thiên nhiên, hình cho Toán) |
 | `baihoc.js` | Bài học có hình của 30 chặng: thẻ học và 12 bài tập có tranh mỗi chặng |
 | `giongdoc.js` | Giọng cô giáo: chuẩn hoá cách đọc và chọn giọng |

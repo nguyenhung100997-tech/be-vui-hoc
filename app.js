@@ -304,7 +304,7 @@ function lessonView(g,s){LZ.g=g;LZ.s=s;const L=BV.LES[g]&&BV.LES[g][s];const box
  const p=P(),M=GM[g],st=p?lesP(p,g,s):{};const bt=sub=>{const v=best(p,g,s,sub);return v<0?null:v};
  if(LZ.view==="cards")return cardsView(g,s);if(LZ.view==="game")return gameView(g,s);
  const steps=[
-  {k:"cards",t:"Bước 1 · Xem trước",n:"Thẻ học",ids:(L.cards.filter(c=>typeof c==="string").concat(L.hero)).slice(0,3),done:!!st.c,act:`data-lv="cards"`},
+  {k:"cards",t:"Bước 1 · Xem trước",n:"Thẻ học",ids:[...new Set([...L.cards.filter(c=>typeof c==="string"),...L.hero,"sach","butchi","vo"])].slice(0,3),done:!!st.c,act:`data-lv="cards"`},
   {k:"ex",t:`Bước 2 · ${L.ex.length} câu có tranh`,n:"Bài tập có hình",ids:L.hero.slice().reverse(),done:(st.e||0)>=Math.ceil(L.ex.length*.6),sc:st.e!=null?`${st.e}/${L.ex.length}`:"",act:`data-les="${g}|${s}"`},
   {k:"t",t:`Bước 3 · ${BV.G[g].toan[s].n}`,n:"Luyện Toán",ids:["tao","cam","sao"],done:bt("t")>=passN(g,"t"),sc:bt("t")!=null?`${bt("t")}/${qlen(g,"t")}`:"",act:`data-learn="${g}|${s}|t"`},
   {k:"v",t:`Bước 4 · ${BV.G[g].tv[s].n}`,n:"Luyện Tiếng Việt",ids:["sach","vo","butchi"],done:bt("v")>=passN(g,"v"),sc:bt("v")!=null?`${bt("v")}/${qlen(g,"v")}`:"",act:`data-learn="${g}|${s}|v"`},

@@ -7,7 +7,10 @@ const XS=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'
 const CLS=/^(con|quả|cái|quyển|bông|chiếc|ngôi|đám|cơn|dòng|ngọn|mặt|bắp|củ|chùm|lá|bút|xe|ô)\s+/;
 const NAMES=Object.keys(P).flatMap(k=>{const n=P[k].n.toLowerCase(),sh=n.replace(CLS,"");const out=[[n,k]];if(sh!==n&&sh.length>=3&&!["chì","cờ","tô","gà trống"].includes(sh))out.push([sh,k]);if(k==="ga")out.push(["gà",k]);return out}).sort((a,b)=>b[0].length-a[0].length);
 const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-const RX=NAMES.map(([n,k])=>[new RegExp(`(^|[^\\p{L}])${esc(n)}(?=$|[^\\p{L}])`,"iu"),k]);
+const ALIAS={luagao:["lúa"],thaygiao:["thầy"],nongdan:["nông dân"],cuuhoa:["lính cứu hoả","cứu hoả"],tauhoa:["tàu hỏa"],huou:["hươu"],caheo:["cá heo"],gacon:["gà con"],embe:["em bé"],bo2:["cha"],sutu:["sư tử"],cavoi:["cá voi"],canhcut:["chim cánh cụt","cánh cụt"],maybay:["máy bay"],xebuyt:["xe buýt"],traidat:["Trái Đất"],cauvong:["cầu vồng"],hoahong:["hoa hồng"],sen:["hoa sen"],huongduong:["hướng dương"],xuongrong:["xương rồng"],thong:["cây thông"],banhmi:["bánh mì"],banhkem:["bánh sinh nhật","bánh kem"],gaubong:["gấu bông"],bongbay:["bóng bay"],dan:["đàn ghi-ta"],tivi:["ti vi"],maytinh:["máy tính"],banchai:["bàn chải"],xaphong:["xà phòng"],dua2:["dứa"],dua3:["dừa"],dau:["dâu tây"],anhdao:["anh đào"],khoai:["khoai tây"],cai:["bắp cải"],cachua:["cà chua"],khunglong:["khủng long"],bachtuoc:["bạch tuộc"],chimcong:["chim công"],cu:["cú mèo"],le:["quả lê"],dao:["quả đào"]};
+for(const k in ALIAS)if(P[k])ALIAS[k].forEach(n=>NAMES.push([n.toLowerCase(),k]));NAMES.sort((a,b)=>b[0].length-a[0].length);
+const NEG={ongnoi:"(?!\\s+(mặt|trăng|sao|bụt|tiên|vua))",ba:"(?!\\s+con)",ao:"(?!\\s)"};
+const RX=NAMES.filter(([n])=>n.length>=2).map(([n,k])=>[new RegExp(`(^|[^\\p{L}])${esc(n)}(?=$|[^\\p{L}])${NEG[k]||""}`,"iu"),k]);
 BV.findPics=(text,max=3)=>{const t=String(text||""),out=[];for(const[r,k]of RX){if(out.length>=max)break;if(!out.includes(k)&&r.test(t))out.push(k)}return out};
 /* hình đặt tính và bảng phấn */
 const IN="#1d2a5c";
@@ -17,9 +20,10 @@ BV.PK.col=p=>{const a=String(p.a),b=String(p.b),w=Math.max(a.length,b.length)+1,
 BV.PK.board=p=>{const t=String(p.t).slice(0,34),fs=t.length>22?22:t.length>14?28:34;return`<svg viewBox="0 0 320 150"><rect x="6" y="6" width="308" height="122" rx="10" fill="#2b8a3e" stroke="#a0522d" stroke-width="8"/><text x="160" y="${74+fs/3}" text-anchor="middle" font-size="${fs}" font-weight="800" font-family="Nunito,sans-serif" fill="#fff">${XS(t)}</text><rect x="120" y="128" width="80" height="10" rx="4" fill="#a0522d"/><circle cx="276" cy="112" r="0"/></svg>`};
 const COLRX=/^(\d[\d ]*(?:,\d+)?) ([+−×]) (\d[\d ]*(?:,\d+)?) = \?$/;
 const FORM=/(\d[\d ,]*\s*[+−×:]\s*\d[\d ,]*(?:\s*[+−×:]\s*\d[\d ,]*)*)/;
-function decorate(q,ids,math){if(!q)return q;if(q.m>3)q=Object.assign({},q,{m:3});if(q.pic)return q;q=Object.assign({},q);const t=q.q||"";
+function decorate(q,ids,math){if(!q)return q;if(q.m>3)q=Object.assign({},q,{m:3});if(q.pic||q.t==="pmc")return q;q=Object.assign({},q);const t=q.q||"";
  const m=math&&t.match(COLRX);if(m&&m[1].replace(/\D/g,"").length<=6&&m[3].replace(/\D/g,"").length<=6){q.pic={k:"col",a:m[1].replace(/ /g,""),op:m[2],b:m[3].replace(/ /g,"")};q.noIn=q.noIn||false;return q}
  const f=BV.findPics(t+" "+(math?"":(q.a||"")),3);if(f.length){q.pic=f.length===1?{k:"img",id:f[0]}:{k:"row",ids:f};return q}
+ if(!math){const qm=t.match(/“([^”]{1,22})”/);if(qm&&!q.p){q.pic={k:"board",t:qm[1]};return q}}
  if(math){const e=t.match(FORM);q.pic={k:"board",t:e?e[1].trim()+(t.includes("= ?")?" = ?":""):"Bé tính nhé!"};return q}
  q.pic=ids&&ids.length?(ids.length===1?{k:"img",id:ids[0]}:{k:"row",ids:ids.slice(0,3)}):{k:"row",ids:["sach","butchi","vo"]};return q}
 BV.decorate=decorate;
@@ -47,7 +51,7 @@ function build(g,s){const G=BV.G[g],M=G.meta[s],C=G.C,SK=C.SK,TV=C.TV;const stor
  skills.slice(0,2).forEach(k=>{const sk=SK[k];const c=sk.card?call(sk.card):cardFromQ(call(sk.g[0]),true);if(c)cards.push(c)});
  topics.slice(0,2).forEach(t=>{const tv=TV[t];if(tv.card){cards.push(call(tv.card));return}const it=tv.b.find(x=>x[0]===1||x[0]==="i")||tv.b[0];if(!it)return;const q=decorate(tvQ(it,stTV),hero,false);cards.push({pic:q.pic,f:q.t==="ord"?q.words.join(" "):q.q,b:`Đáp án: ${q.t==="ord"?q.words.join(" "):q.a}.${q.ex?" "+q.ex:""}`})});
  if(story)cards.push({pic:{k:"row",ids:story.ids.slice(0,3).length?story.ids.slice(0,3):hero},f:`Truyện: ${story.t}`,b:firstSent(story.p)});
- hero.slice(0,2).forEach(k=>cards.push(k));
+ [...new Set([...ids.filter(k=>!hero.includes(k)),...hero])].slice(0,2).forEach(k=>cards.push(k));
  /* 12 bài tập: 6 Toán + 6 Tiếng Việt */
  const ex=[];
  const mathPics=skills.flatMap(k=>{const sk=SK[k];const own=(sk.pic||[]).map(f=>()=>decorate(f(),ids,true));const auto=[0,1,2].map(i=>()=>decorate((sk.g[i]||sk.g[0])(),ids,true));return own.length?[...own,auto[1],auto[2]]:auto});
