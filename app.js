@@ -113,7 +113,7 @@ const normN=s=>String(s).replace(/[\s ]/g,"").replace(/\./g,",").replace(/^0+(?
 function same(q,v){if(q.num){const a=q.a.includes(",")?normN(q.a):normN(q.a).replace(/,/g,"");const b=q.a.includes(",")?normN(v):String(v).replace(/[\s .,]/g,"").replace(/^0+(?=\d)/,"");return a===b}return[q.a,...(q.alt||[])].some(x=>norm(v)===norm(x))}
 
 /* ---------- màn hình ---------- */
-function header(){const p=P();$("starCount").textContent=p?p.stars:0;const g=p?p.grade:1;$("navGrade").href="#lop-"+g;$("navGrade").textContent="Lớp "+g}
+function header(){const p=P();const na=$("navAdmin");if(na)na.hidden=!ACC.admin;$("starCount").textContent=p?p.stars:0;const g=p?p.grade:1;$("navGrade").href="#lop-"+g;$("navGrade").textContent="Lớp "+g}
 function home(){const p=P();
  $("hello").textContent=p?`Chào ${nm()}! Bé đang học lớp ${p.grade} và có ${p.stars} sao.${p.cls?` Bé đang ở lớp chung ${p.cls.code}.`:""}`:"Bé tên là gì nhỉ?";
  const names=Object.keys(S.players);
@@ -126,7 +126,8 @@ function gradeView(g){const p=P(),G=BV.G[g],M=GM[g];let done=0;
   return`<article class="stop ${ok?"done":open?"":"lock"}"><div class="ic">${icon(g,ok?2:open?1:0)}</div><div class="card"><h3><small>Chặng ${s+1}</small>${M.places[s]}</h3><p>Toán: ${t.n} · Tiếng Việt: ${G.tv[s].n}</p>
   ${open?`<div class="acts"><a class="btn coral" href="#bai-${g}-${s}">▶ Vào học</a><button class="btn alt" data-learn="${g}|${s}|t">Toán ${b("t")}</button><button class="btn alt" data-learn="${g}|${s}|v">Tiếng Việt ${b("v")}</button></div>`:`<div class="locknote">Vượt qua chặng ${s} để mở</div>`}</div></article>`}).join("");
  const nr=p?p.rv.filter(r=>r.g===g&&r.due<=Date.now()).length:0;
- const ex=(sub,lab)=>`<div class="acts"><button class="btn g" data-exam="${g}|${sub}|3">${lab} giữa năm</button><button class="btn alt" data-exam="${g}|${sub}|6">${lab} cuối năm</button></div>`;
+ const ex=(sub,lab)=>`<div class="acts">${[3,6].map(k=>{const ok=canExam(g,sub,k);return`<button class="btn ${k===3?"g":"alt"}${ok?"":" locked"}" ${ok?`data-exam="${g}|${sub}|${k}"`:`data-lock="${ACC.member?"closed":"key"}"`}>${ok?"":LOCK+" "}${lab} ${k===3?"giữa năm":"cuối năm"}</button>`}).join("")}</div>`;
+ const exNote=ACC.admin?`<p class="note">Bạn đang dùng key gốc nên mọi đề đều mở. Chọn đề mở cho học sinh trong mục <a href="#quan-ly">Quản lý</a>.</p>`:ACC.member?(Object.keys(ACC.open).some(k=>k.startsWith(g+"-"))?"":`<p class="note">Thầy cô chưa mở đề kiểm tra nào của lớp ${g}.</p>`):`<p class="note">Phần kiểm tra cần key học sinh. <button class="btn alt" data-keygate="1" style="min-height:36px;padding:4px 12px">Nhập key</button></p>`;
  $("v-grade").innerHTML=`<div class="band gband" style="--g:${M.color}"><div class="wrap"><svg class="em" viewBox="0 0 64 64">${icon(g,2).replace(/^<svg[^>]*>|<\/svg>$/g,"")}</svg><div><h2>Lớp ${g} · ${M.name}</h2><p>${M.tag}</p><div class="rules">${M.rules.map(r=>`<span>${r}</span>`).join("")}</div></div></div></div>
  <div class="band" style="--g:${M.color}"><div class="wrap cols"><div>
   <h2>Bản đồ 6 chặng</h2><div class="prog"><i style="width:${done/6*100}%"></i></div>
@@ -134,7 +135,7 @@ function gradeView(g){const p=P(),G=BV.G[g],M=GM[g];let done=0;
   <div class="trail">${stops}</div></div>
   <aside style="display:grid;gap:16px">
    <div class="card exam"><h3>Kiểm tra theo 3 mức</h3><p>Đề ${M.exam.n} câu, trộn khoảng 50% câu nhận biết, 30% kết nối, 20% vận dụng${M.exam.min?`, làm trong ${M.exam.min} phút`:""}. Chấm và chữa bài sau khi nộp.</p>
-    <p class="note" style="margin-top:12px">Giữa năm: chặng 1–3 · Cuối năm: cả 6 chặng</p>${ex("t","Toán")}${ex("v","Tiếng Việt")}</div>
+    <p class="note" style="margin-top:12px">Giữa năm: chặng 1–3 · Cuối năm: cả 6 chặng</p>${ex("t","Toán")}${ex("v","Tiếng Việt")}${exNote}</div>
    <div class="card"><h3>Ôn câu sai</h3><p>${nr?`Có ${nr} câu đang chờ bé ôn lại.`:"Chưa có câu nào cần ôn. Giỏi lắm!"}</p>${nr?`<a class="btn g" href="#on-tap">Ôn ngay</a>`:""}</div>
    <div class="card"><h3>Cha mẹ xem nhanh</h3><p>Xem bé mạnh, yếu ở chủ đề nào trong mục Báo cáo.</p><a class="btn alt" href="#bao-cao">Xem báo cáo</a></div>
   </aside></div></div>`}
@@ -144,7 +145,7 @@ let Q=null,tick=null;
 function needName(){if(P())return false;location.hash="#home";setTimeout(()=>$("nameIn").focus(),60);return true}
 function startLearn(g,s,sub){if(needName())return;const M=GM[g];let qs=build(g,sub,[s],levelsFor(qlen(g,sub)));if(sub==="v")qs=qs.sort((a,b)=>a.m-b.m);
  Q={mode:"learn",g,s,sub,qs,i:0,score:0,res:[],ans:[],streak:0,gain:0,tries:0};show("play");drawQ()}
-function startExam(g,sub,k){if(needName())return;const M=GM[g];const qs=shuffle(build(g,sub,[...Array(k).keys()],examLevels(M.exam.n)));
+function startExam(g,sub,k){if(needName())return;if(!canExam(g,sub,k)){if(ACC.member)toast("Thầy cô chưa mở đề này.");else keyModal();return}const M=GM[g];const qs=shuffle(build(g,sub,[...Array(k).keys()],examLevels(M.exam.n)));
  Q={mode:"exam",g,sub,k,qs,i:0,score:0,res:[],ans:[],gain:0,end:M.exam.min?Date.now()+M.exam.min*60000:0};show("play");drawQ();if(Q.end)runClock()}
 function startReview(){const p=P();if(!p)return;const due=p.rv.filter(r=>r.due<=Date.now()).slice(0,10);if(!due.length)return;
  Q={mode:"review",g:p.grade,qs:due.map(r=>Object.assign({},r.q,{rid:r.id})),i:0,score:0,res:[],ans:[],gain:0};show("play");drawQ()}
@@ -327,7 +328,7 @@ document.addEventListener("click",e=>{const t=e.target;
 const SAMPLE="Chào các con! Hôm nay cô cùng các con học bài nhé. 25 + 17 = 42. Tiếng “nghé” bắt đầu bằng âm “ngh”. Quả cam nặng 2,5 kg. 3/4 cái bánh.";
 async function voiceView(){const box=$("voiceBox");if(!box)return;const V=BV.voice,vs=V.voices(),cloud=!!(window.BV_TTS&&BV_TTS.apiKey);let cv=[];if(cloud){try{cv=await V.listCloud()}catch(e){cv=[]}}
  const cur=V.cloudOn()&&cv.length?"Giọng Google Cloud: "+(V.cfg.cvoice||(BV_TTS.voice)||cv.find(v=>v.g==="FEMALE")?.name||cv[0]?.name):vs.length?"Giọng trên máy: "+V.current():"Máy này chưa có giọng tiếng Việt";
- const myCode=Object.keys(S.teach||{})[0]||null;const dict=V.cfg.dict||{},cdict=V.classDict||{};
+ const myCode=ACC.admin?"site":null;const dict=V.cfg.dict||{},cdict=V.classDict||{};
  box.innerHTML=`<h3>Giọng cô giáo</h3><p class="note" style="margin-top:2px">Đang dùng: <b id="vcur"></b></p>
  ${!vs.length&&!cloud?`<div class="weak"><div>Máy chưa có giọng đọc tiếng Việt. Xem cách cài ở cuối khung này.</div></div>`:""}
  <div style="display:grid;gap:10px;margin-top:10px">
@@ -343,7 +344,7 @@ async function voiceView(){const box=$("voiceBox");if(!box)return;const V=BV.voi
  <h3 style="margin-top:10px">Sửa cách đọc</h3><p class="note" style="margin:0">Nếu nghe thấy từ nào đọc chưa chuẩn, ghi cách viết và cách đọc đúng. Trang sẽ đọc theo cách bạn sửa.</p>
  <div class="namebox" style="margin-top:6px"><input id="dw" placeholder="Chữ viết, VD: km/giờ" aria-label="Chữ viết"><input id="dr" placeholder="Đọc là, VD: ki lô mét trên giờ" aria-label="Đọc là"><button class="btn" id="dadd">Thêm</button></div>
  <div id="dlist"></div>
- ${myCode?`<div class="acts"><button class="btn coral" id="dclass">Áp dụng bảng sửa cho cả lớp ${esc(myCode)}</button></div><p class="note" id="dmsg" style="margin:0"></p>`:""}
+ ${myCode?`<div class="acts"><button class="btn coral" id="dclass">Áp dụng bảng sửa cho tất cả học sinh</button></div><p class="note" id="dmsg" style="margin:0"></p>`:""}
  <details style="margin-top:6px"><summary style="font-weight:800;cursor:pointer">Cách có giọng tiếng Việt hay trên máy</summary><ul>
   <li><b>Máy tính Windows:</b> mở trang bằng trình duyệt <b>Microsoft Edge</b> để có giọng nữ “HoaiMy (Natural)” rất tự nhiên.</li>
   <li><b>Điện thoại Android:</b> Cài đặt → Hệ thống → Ngôn ngữ → Chuyển văn bản thành giọng nói → chọn “Dịch vụ lời nói của Google”, tải gói tiếng Việt.</li>
@@ -360,9 +361,86 @@ async function voiceView(){const box=$("voiceBox");if(!box)return;const V=BV.voi
  $("vtest").onclick=()=>V.speak(SAMPLE);$("vstop").onclick=()=>V.stop();$("vsay").onclick=()=>V.speak($("vtxt").value);
  $("dadd").onclick=()=>{const k=$("dw").value.trim(),v=$("dr").value.trim();if(!k||!v)return;V.cfg.dict=Object.assign({},V.cfg.dict,{[k]:v});V.save();voiceView()};
  $("dlist").onclick=e=>{const b=e.target.closest("[data-ddel]");if(!b)return;const d=Object.assign({},V.cfg.dict);delete d[b.dataset.ddel];V.cfg.dict=d;V.save();voiceView()};
- if($("dclass"))$("dclass").onclick=async()=>{try{const ok=await CL.init();if(!ok)throw new Error("Chưa kết nối lớp chung");const d=Object.assign({},V.classDict,V.cfg.dict);await CL.db.set(`classes/${myCode}`,{dict:d});V.classDict=d;$("dmsg").textContent="Đã áp dụng cho cả lớp. Máy các bé sẽ nhận bảng sửa khi mở trang."}catch(err){$("dmsg").textContent="Chưa lưu được: "+err.message}}}
+ if($("dclass"))$("dclass").onclick=async()=>{try{const ok=await CL.init();if(!ok)throw new Error("Chưa kết nối lớp chung");const d=Object.assign({},V.classDict,V.cfg.dict);await CL.setDict(d);V.classDict=d;$("dmsg").textContent="Đã áp dụng cho tất cả học sinh. Máy các bé sẽ nhận bảng sửa khi mở trang."}catch(err){$("dmsg").textContent="Chưa lưu được: "+err.message}}}
 if(BV.voice)BV.voice.onchange=()=>{if($("v-guide")&&$("v-guide").classList.contains("on"))voiceView()};
-async function loadClassDict(){const p=P();const code=p&&p.cls?p.cls.code:Object.keys(S.teach||{})[0];if(!code||!window.BV_FIREBASE)return;try{if(!(await CL.init()))return;const c=await CL.getClass(code);BV.voice.classDict=(c&&c.dict)||{}}catch(e){}}
+async function loadClassDict(){if(!window.BV_FIREBASE&&!window.BV_MEMDB)return;try{if(!(await CL.init()))return;BV.voice.classDict=await CL.getDict()}catch(e){}}
+/* ---------- key gốc, key học sinh, quản lý ---------- */
+let ACC={admin:false,member:false,open:{},checked:false};
+const LOCK=`<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="vertical-align:-2px"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.4" fill="none"/></svg>`;
+const canExam=(g,sub,k)=>ACC.admin||(ACC.member&&!!ACC.open[`${g}-${sub}-${k}`]);
+async function refreshAcc(rerender=true){if(!(window.BV_FIREBASE||window.BV_MEMDB))return ACC;try{ACC=await CL.access()}catch(e){}header();if(rerender){const h=location.hash.slice(1);if(/^lop-[1-5]$/.test(h))gradeView(+h.split("-")[1]);else if(h==="quan-ly")adminView();else if(h==="lop-chung")classView()}return ACC}
+const KM={open:false,v:"",msg:""};
+function keyModal(){KM.open=true;KM.v="";KM.msg="";kmRender()}
+function kmClose(){KM.open=false;$("welcome").innerHTML="";document.body.classList.remove("wopen")}
+function kmRender(){document.body.classList.add("wopen");$("welcome").innerHTML=`<div class="wel" role="dialog" aria-modal="true" aria-labelledby="kmt"><div class="wbox pop"><svg class="wowl" aria-hidden="true"><use href="#owl"/></svg><span class="wchip">Key học sinh</span><h2 id="kmt">Nhập key của bé</h2><p class="wsub">Key gồm 8 số do thầy cô cấp.</p><p class="wmsg" id="kmm"></p>
+ <div class="wboxes k8">${[...Array(8)].map((_,i)=>`<i class="${i<KM.v.length?"f":""}">${KM.v[i]||""}</i>`).join("")}</div>
+ <div class="wpad">${["1","2","3","4","5","6","7","8","9","Xoá","0","Mở khoá"].map(k=>`<button data-km="${k}" class="${k==="Mở khoá"?"go":""}">${k}</button>`).join("")}</div>
+ <p class="wnote">Chưa có key? Ba mẹ liên hệ thầy cô để nhận key.</p><div class="wlinks"><button data-km="close">Để sau</button></div></div></div>`;$("kmm").textContent=KM.msg}
+async function kmSubmit(){if(KM.v.length!==8){KM.msg="Key gồm đủ 8 số nhé.";return kmRender()}KM.msg="Đang kiểm tra…";kmRender();
+ try{await CL.redeemKey(KM.v);ACC=CL.acc;kmClose();header();await refreshAcc(true);toast("Đã mở khoá! Bé vào học được Lớp chung và các đề kiểm tra đã mở.")}catch(e){KM.v="";KM.msg=e.message;beep(false);kmRender()}}
+function toast(m){let t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),3500)}
+document.addEventListener("click",e=>{const t=e.target;
+ const km=t.closest("[data-km]");if(km&&KM.open){const v=km.dataset.km;if(v==="close")return kmClose();if(v==="Xoá")KM.v=KM.v.slice(0,-1);else if(v==="Mở khoá")return kmSubmit();else if(KM.v.length<8)KM.v+=v;KM.msg="";kmRender();if(KM.v.length===8)kmSubmit();return}
+ const lk=t.closest("[data-lock]");if(lk){if(lk.dataset.lock==="key"){if(!(window.BV_FIREBASE||window.BV_MEMDB))return toast("Trang này chưa bật máy chủ nên chưa dùng được key.");keyModal()}else toast("Thầy cô chưa mở đề này. Bé luyện các chặng trước nhé!");return}
+ if(t.closest("[data-keygate]")){keyModal();return}});
+document.addEventListener("keydown",e=>{if(!KM.open)return;if(/^\d$/.test(e.key)&&KM.v.length<8){KM.v+=e.key;KM.msg="";kmRender();if(KM.v.length===8)kmSubmit()}else if(e.key==="Backspace"){KM.v=KM.v.slice(0,-1);kmRender()}else if(e.key==="Escape")kmClose()});
+function gateView(){const box=cbox();box.innerHTML=`<h2>Lớp chung</h2><p>Lớp chung dành cho học sinh đã có <b>key học sinh</b> hoặc <b>mã của bé</b> do thầy cô cấp.</p><p class="note" id="cmsg"></p>
+ <div class="grid2"><div class="card"><h3>Bé có key học sinh (8 số)</h3><p>Nhập key một lần, máy sẽ nhớ cho những lần sau.</p><button class="btn coral" data-keygate="1" style="margin-top:8px">Nhập key học sinh</button></div>
+ <div class="card"><h3>Bé có mã lớp và mã của bé</h3><form id="pinGate" style="display:grid;gap:10px"><input id="gCode" maxlength="6" placeholder="Mã lớp, VD: K7M2QP" aria-label="Mã lớp" autocomplete="off" style="text-transform:uppercase;font-size:18px;padding:12px;border-radius:14px;border:3px solid var(--line);background:var(--card);color:var(--ink)"><input id="gPin" type="password" inputmode="numeric" maxlength="6" placeholder="Mã của bé (6 số)" aria-label="Mã của bé" style="font-size:18px;padding:12px;border-radius:14px;border:3px solid var(--line);background:var(--card);color:var(--ink)"><button class="btn">Vào lớp</button></form></div></div>
+ <p class="note" style="margin-top:16px">Chủ trang? <a href="#quan-ly">Đăng nhập bằng key gốc</a>.</p>`;$("cmsg").textContent=CV.msg;CV.msg=""}
+document.addEventListener("submit",async e=>{const f=e.target;if(!["pinGate","admLogin","admSetup","admKeys","admMaster","admOpen"].includes(f.id))return;e.preventDefault();
+ try{
+ if(f.id==="pinGate"){const code=$("gCode").value.trim().toUpperCase(),pin=$("gPin").value.trim();const s=await CL.loginByPin(code,pin);if(!s){CV.msg="Mã lớp hoặc mã của bé chưa đúng.";return gateView()}ACC=CL.acc;return loginAs(code,s,"#lop-"+(s.grade||1))}
+ if(f.id==="admLogin"){await CL.adminLogin($("amKey").value);ACC=CL.acc;AV.msg="Đăng nhập chủ trang thành công.";header();return adminView()}
+ if(f.id==="admSetup"){const a=$("asKey").value,b=$("asKey2").value;if(a!==b){AV.msg="Hai lần nhập key gốc chưa giống nhau.";return adminView()}await CL.adminSetup(a);ACC=CL.acc;AV.msg="Đã tạo key gốc. Hãy ghi lại key gốc ở nơi an toàn.";header();return adminView()}
+ if(f.id==="admKeys"){const n=Math.max(1,Math.min(100,+$("akN").value||1)),lb=$("akL").value.trim(),dy=+$("akD").value||0;f.querySelector("button").disabled=true;$("amsg").textContent="Đang tạo key…";const list=await CL.makeKeys(n,lb,dy);AV.issued=list;AV.msg=`Đã tạo ${list.length} key học sinh.`;return adminView()}
+ if(f.id==="admMaster"){const a=$("acKey").value,b=$("acKey2").value;if(a!==b){AV.msg="Hai lần nhập key gốc mới chưa giống nhau.";return adminView()}await CL.changeMaster(a);ACC=CL.acc;AV.msg="Đã đổi key gốc. Các máy quản trị khác phải đăng nhập lại.";return adminView()}
+ if(f.id==="admOpen"){const m={};f.querySelectorAll("input[data-op]").forEach(i=>{if(i.checked)m[i.dataset.op]=true});await CL.setOpen(m);ACC.open=m;CL.acc.open=m;AV.msg="Đã lưu: học sinh có key sẽ thấy các đề được tick.";return adminView()}
+ }catch(err){if(f.id==="pinGate"){CV.msg=err.message;gateView()}else{AV.msg=err.message;adminView()}}});
+const AV={msg:"",issued:null,filter:""};
+const fmtD=t=>t?new Date(t).toLocaleDateString("vi-VN"):"không hạn";
+const keyLink=k=>`${baseUrl()}?key=${k}`;
+let avN=0;async function adminView(){const box=$("v-admin");if(!box)return;const my=++avN;box.innerHTML=`<div class="band"><div class="wrap" id="adm"><h2>Quản lý key</h2><p>Đang tải…</p></div></div>`;const el=$("adm");
+ if(!(window.BV_FIREBASE||window.BV_MEMDB)||!(await CL.init())){el.innerHTML=`<h2>Quản lý key</h2><div class="card" style="margin-top:14px"><p>Mục này cần Firebase. Hãy làm theo tệp HƯỚNG DẪN để bật Lớp chung trước.</p></div>`;return}
+ if(!ACC.checked)ACC=await CL.access();
+ if(my!==avN)return;
+ if(!ACC.admin){el.innerHTML=`<h2>Quản lý key</h2><p>Dành cho chủ trang. Đăng nhập bằng <b>key gốc</b> để tạo lớp, tạo và mở đề, cấp key học sinh.</p><p class="note" id="amsg"></p>
+  <div class="grid2"><div class="card"><h3>Đăng nhập chủ trang</h3><form id="admLogin" class="namebox"><input id="amKey" type="password" placeholder="Key gốc" aria-label="Key gốc" autocomplete="current-password"><button class="btn">Đăng nhập</button></form></div>
+  <div class="card"><h3>Tạo key gốc lần đầu</h3><p class="note" style="margin:0">Chỉ làm một lần, ngay sau khi đưa trang lên mạng. Key gốc gồm ít nhất 8 kí tự, nên có cả chữ và số.</p><form id="admSetup" style="display:grid;gap:8px;margin-top:8px"><input id="asKey" type="password" placeholder="Key gốc mới" aria-label="Key gốc mới" autocomplete="new-password" class="ainp"><input id="asKey2" type="password" placeholder="Nhập lại key gốc" aria-label="Nhập lại key gốc" autocomplete="new-password" class="ainp"><button class="btn coral">Tạo key gốc</button></form></div></div>`;$("amsg").textContent=AV.msg;AV.msg="";return}
+ let keys=[],mem=[],classes=[];try{[keys,mem,classes]=await Promise.all([CL.listKeys(),CL.listMembers(),CL.listClasses()])}catch(e){AV.msg="Lỗi tải dữ liệu: "+e.message}
+ if(my!==avN||!$("adm"))return;
+ const cnt={};mem.forEach(m=>{if(m.via==="key")cnt[m.kh]=(cnt[m.kh]||0)+1});
+ const fl=AV.filter.toLowerCase(),shown=keys.filter(k=>!fl||k.k.includes(fl)||(k.label||"").toLowerCase().includes(fl));
+ const iss=AV.issued||[];
+ el.innerHTML=`<h2>Quản lý key</h2><p>Bạn đang đăng nhập bằng <b>key gốc</b>. Mọi đề đều mở với bạn.</p><p class="note" id="amsg"></p>
+ <div class="grid2"><div class="card"><h3>Cấp key học sinh</h3><form id="admKeys" style="display:grid;gap:8px;margin-top:6px">
+  <label class="vrow">Số key<input id="akN" type="number" min="1" max="100" value="20" class="ainp"></label>
+  <label class="vrow">Ghi chú<input id="akL" maxlength="40" placeholder="VD: Lớp 3A – học kì 1" class="ainp"></label>
+  <label class="vrow">Hạn dùng<select id="akD" class="ainp"><option value="0">Không hạn</option><option value="30">30 ngày</option><option value="90">3 tháng</option><option value="180">6 tháng</option><option value="365">1 năm</option></select></label>
+  <button class="btn coral">Tạo key</button></form><p class="note">Mỗi key gồm 8 số. Bé nhập một lần, máy nhớ cho những lần sau. Thu hồi key thì máy dùng key đó mất quyền ngay.</p></div>
+ <div class="card"><h3>Mở đề kiểm tra 3 mức</h3><p class="note" style="margin:0">Tick đề nào thì học sinh có key thấy đề đó.</p><form id="admOpen"><table class="optbl"><thead><tr><th>Lớp</th><th>Toán giữa năm</th><th>Toán cuối năm</th><th>TV giữa năm</th><th>TV cuối năm</th></tr></thead><tbody>${[1,2,3,4,5].map(g=>`<tr><td><b>Lớp ${g}</b></td>${[["t",3],["t",6],["v",3],["v",6]].map(([s,k])=>`<td><input type="checkbox" data-op="${g}-${s}-${k}" ${ACC.open[`${g}-${s}-${k}`]?"checked":""} aria-label="Lớp ${g} ${s==="t"?"Toán":"Tiếng Việt"} ${k===3?"giữa năm":"cuối năm"}"></td>`).join("")}</tr>`).join("")}</tbody></table>
+  <div class="acts" style="margin-top:10px"><button type="button" class="btn alt" data-adm="all">Tick tất cả</button><button type="button" class="btn alt" data-adm="none">Bỏ tick tất cả</button><button class="btn">Lưu</button></div></form>
+  <p class="note">Đề thi chung trong Lớp chung do chủ trang tạo ở thẻ Giáo viên của từng lớp.</p></div></div>
+ ${iss.length?`<div class="card" style="margin-top:18px;border-color:var(--ok)"><h3>Key vừa tạo (${iss.length})</h3><p class="note">Gửi mỗi bé một key. Bé có thể mở link riêng hoặc quét mã QR để vào ngay.</p><table><thead><tr><th>Key</th><th>Ghi chú</th><th>Link mở nhanh</th></tr></thead><tbody id="aiss"></tbody></table>
+  <div class="acts" style="margin-top:10px"><button class="btn coral" data-adm="copy">Sao chép tất cả</button><button class="btn" data-adm="print">In thẻ key có mã QR</button></div></div>`:""}
+ <div class="card" style="margin-top:18px"><h3>Danh sách key (${keys.length})</h3><div class="namebox" style="margin-top:6px"><input id="akF" placeholder="Tìm theo key hoặc ghi chú" aria-label="Tìm key" value="${esc(AV.filter)}"></div>
+  ${shown.length?`<table class="stack"><thead><tr><th>Key</th><th>Ghi chú</th><th>Hạn dùng</th><th class="n">Số máy</th><th>Trạng thái</th><th></th></tr></thead><tbody id="akl"></tbody></table>`:`<p>Chưa có key nào.</p>`}</div>
+ <div class="grid2" style="margin-top:18px"><div class="card"><h3>Các lớp (${classes.length})</h3>${classes.length?`<ul class="clist" id="acl"></ul>`:"<p>Chưa có lớp. Tạo lớp trong mục Lớp chung.</p>"}<a class="btn alt" href="#lop-chung" style="margin-top:8px">Mở Lớp chung</a></div>
+ <div class="card"><h3>Đổi key gốc</h3><form id="admMaster" style="display:grid;gap:8px"><input id="acKey" type="password" placeholder="Key gốc mới (ít nhất 8 kí tự)" autocomplete="new-password" class="ainp" aria-label="Key gốc mới"><input id="acKey2" type="password" placeholder="Nhập lại key gốc mới" autocomplete="new-password" class="ainp" aria-label="Nhập lại"><button class="btn alt">Đổi key gốc</button></form>
+  <button class="btn alt" data-adm="logout" style="margin-top:12px">Đăng xuất chủ trang trên máy này</button></div></div>`;
+ $("amsg").textContent=AV.msg;AV.msg="";
+ if(iss.length){$("aiss").innerHTML=iss.map(()=>"<tr><td><b></b></td><td></td><td class='linkcell'></td></tr>").join("");[...$("aiss").children].forEach((tr,i)=>{const td=tr.children;td[0].firstChild.textContent=iss[i].k;td[1].textContent=iss[i].label||"";td[2].textContent=keyLink(iss[i].k)})}
+ if(shown.length){$("akl").innerHTML=shown.map(k=>`<tr><td><b class="kv"></b></td><td class="kl"></td><td>${fmtD(k.exp)}</td><td class="n">${cnt[k.id]||0}</td><td>${k.active&&(!k.exp||k.exp>Date.now())?'<span style="color:var(--ok);font-weight:800">Đang dùng</span>':k.active?'<span style="color:var(--soft);font-weight:800">Hết hạn</span>':'<span style="color:var(--bad);font-weight:800">Đã thu hồi</span>'}</td><td><button class="btn alt" data-akey="${esc(k.id)}" data-on="${k.active?1:0}" style="min-height:36px;padding:4px 12px">${k.active?"Thu hồi":"Mở lại"}</button></td></tr>`).join("");[...$("akl").children].forEach((tr,i)=>{tr.querySelector(".kv").textContent=shown[i].k;tr.querySelector(".kl").textContent=shown[i].label||""})}
+ if(classes.length){$("acl").innerHTML=classes.map(c=>`<li><button class="btn alt" data-acls="${esc(c.id)}" style="min-height:36px;padding:4px 12px">Mở</button> <b></b> · mã ${esc(c.id)} · khối ${esc(c.grade)}</li>`).join("");[...$("acl").children].forEach((li,i)=>li.querySelector("b").textContent=classes[i].name)}
+ $("akF").oninput=e=>{AV.filter=e.target.value;clearTimeout(AV._t);AV._t=setTimeout(()=>{adminView().then(()=>{const i=$("akF");if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})},400)};AV.keys=keys}
+function printKeys(list){const area=$("printArea");area.innerHTML=`<div class="pcards">${list.map((x,i)=>`<div class="pcard"><div class="pq">${qrSvg(keyLink(x.k))}</div><div><div class="pn">Key học sinh</div><div class="pl" data-l="${i}"></div><div class="pm"><b>${esc(x.k.slice(0,4)+" "+x.k.slice(4))}</b></div><div class="ps">Mở trang, vào Lớp chung, bấm “Nhập key học sinh”. Hoặc quét mã QR.</div></div></div>`).join("")}</div>`;area.querySelectorAll("[data-l]").forEach(d=>d.textContent=list[+d.dataset.l].label||"");document.body.classList.add("printing");setTimeout(()=>{try{window.print()}catch(e){}},300)}
+document.addEventListener("click",async e=>{const t=e.target;const b=t.closest("[data-adm],[data-akey],[data-acls]");if(!b||!$("v-admin")||!$("v-admin").classList.contains("on"))return;
+ try{if(b.dataset.adm==="all"||b.dataset.adm==="none"){document.querySelectorAll("#admOpen input[data-op]").forEach(i=>i.checked=b.dataset.adm==="all");return}
+ if(b.dataset.adm==="copy")return copyText(AV.issued.map(x=>`${x.k}${x.label?" ("+x.label+")":""} – ${keyLink(x.k)}`).join("\n"),b);
+ if(b.dataset.adm==="print")return printKeys(AV.issued);
+ if(b.dataset.adm==="logout"){ACC=await CL.adminLogout();header();AV.msg="Đã đăng xuất chủ trang trên máy này.";return adminView()}
+ if(b.dataset.akey){await CL.setKey(b.dataset.akey,{active:b.dataset.on!=="1"});AV.msg=b.dataset.on==="1"?"Đã thu hồi key. Máy dùng key này mất quyền ngay.":"Đã mở lại key.";return adminView()}
+ if(b.dataset.acls){CV.code=b.dataset.acls;CV.tab="teach";location.hash="#lop-chung"}}catch(err){AV.msg=err.message;adminView()}});
 /* ---------- lớp chung (nhiều máy, lưu trên Firebase) ---------- */
 const progOf=p=>({best:p.best,st:p.st,lv:p.lv,owned:p.owned,tests:p.tests.slice(0,20),rv:p.rv.slice(-120)});
 let syncT=null;
@@ -382,11 +460,13 @@ async function classView(){const box=cbox();const p=P();
  if(!ok){box.innerHTML=`<h2>Lớp chung</h2><div class="card" style="margin-top:16px"><h3>${CL.err==="nocfg"?"Lớp chung chưa được cài đặt":"Chưa kết nối được"}</h3>
   <p>${CL.err==="nocfg"?"Mục này cần một nơi lưu dữ liệu chung (Firebase) để các bé ở nhiều máy vào cùng một lớp, thi chung và xem bảng xếp hạng tuần, tháng. Thầy cô hoặc phụ huynh làm theo tệp HƯỚNG DẪN đi kèm trang (khoảng 15 phút) để bật mục này.":"Máy đang không vào được mạng hoặc cấu hình Firebase chưa đúng. Hãy kiểm tra mạng rồi thử lại."}</p>
   ${CL.err!=="nocfg"?`<p class="note" id="cerr"></p><button class="btn" data-c="retry">Thử lại</button>`:""}<p class="note">Trong lúc chờ, các bé vẫn học và làm bài bình thường trên máy này.</p></div>`;if($("cerr"))$("cerr").textContent=CL.err;return}
+ if(!ACC.checked)ACC=await CL.access();
+ if(!ACC.admin&&!ACC.member)return gateView();
  const code=p&&p.cls?p.cls.code:CV.code;
  if(!code)return joinView();
  let c;try{c=await CL.getClass(code)}catch(e){box.textContent="Lỗi: "+e.message;return}
  if(!c){CV.code=null;CV.msg="Không tìm thấy lớp có mã này.";return joinView()}
- CV.code=code;const teach=!!(S.teach&&S.teach[code]),me=p&&p.cls&&p.cls.code===code?p.cls:null;
+ CV.code=code;const teach=ACC.admin,me=p&&p.cls&&p.cls.code===code?p.cls:null;
  const tabs=[["rank","Xếp hạng"],["exam","Thi chung"],["act","Hoạt động"],...(teach?[["teach","Giáo viên"]]:[])];
  box.innerHTML=`<div class="gband card" style="--g:${GM[c.grade]?GM[c.grade].color:"#2457d6"};background:var(--g);color:#fff;border:0"><h2 id="cname"></h2><p>Mã lớp: <b style="font-size:24px;letter-spacing:3px">${esc(code)}</b> · Khối ${esc(c.grade)} · ${me?`Bé đang là <b id="cme"></b>`:teach?"Bạn đang ở chế độ giáo viên":""}</p><div class="acts"><button class="btn alt" data-c="leave">${me?"Thoát lớp trên máy này":"Rời khỏi lớp"}</button></div></div>
  <div class="tabs">${tabs.map(([k,l])=>`<button data-ctab="${k}" aria-pressed="${CV.tab===k}">${l}</button>`).join("")}</div><p class="note" id="cmsg"></p><div id="cbody"><p>Đang tải…</p></div>`;
@@ -400,9 +480,8 @@ function joinView(){const box=cbox();const st=CV.step;
   <h3 style="margin-top:18px">Bé chưa có tên trong lớp?</h3><form class="namebox" id="newForm"><input id="newName" maxlength="24" placeholder="Họ tên của bé" aria-label="Họ tên"><input id="newPin" type="password" inputmode="numeric" maxlength="6" placeholder="Đặt mã PIN 4–6 số" aria-label="Mã PIN mới"><button class="btn">Thêm tên</button></form>
   <button class="btn alt" data-c="back" style="margin-top:12px">Nhập mã lớp khác</button></div>`}
  else inner=`<div class="grid2"><div class="card"><h3>Bé vào lớp</h3><p>Nhập mã lớp thầy cô gửi (6 kí tự).</p><form class="namebox" id="codeForm"><input id="codeIn" maxlength="6" placeholder="VD: K7M2QP" aria-label="Mã lớp" autocomplete="off" style="text-transform:uppercase"><button class="btn coral">Tiếp</button></form></div>
-  <div class="card"><h3>Thầy cô tạo lớp mới</h3><form id="mkForm" style="display:grid;gap:10px"><div class="namebox" style="margin:0"><input id="mkName" maxlength="40" placeholder="Tên lớp, VD: Lớp 3A – Trường Kim Đồng" aria-label="Tên lớp"></div>
-   <div class="namebox" style="margin:0"><select id="mkGrade" aria-label="Khối lớp" style="font-size:18px;padding:12px;border-radius:16px;border:3px solid var(--line);background:var(--card);color:var(--ink);min-height:52px">${[1,2,3,4,5].map(g=>`<option value="${g}">Khối ${g}</option>`).join("")}</select><input id="mkPin" type="password" inputmode="numeric" maxlength="6" placeholder="Mã PIN giáo viên 4–6 số" aria-label="Mã PIN giáo viên"></div><button class="btn">Tạo lớp</button></form>
-   <h3 style="margin-top:18px">Thầy cô vào lớp đã có</h3><form class="namebox" id="tForm"><input id="tCode" maxlength="6" placeholder="Mã lớp" aria-label="Mã lớp" style="text-transform:uppercase"><input id="tPin" type="password" inputmode="numeric" maxlength="6" placeholder="PIN giáo viên" aria-label="PIN giáo viên"><button class="btn alt">Vào</button></form></div></div>`;
+  ${ACC.admin?`<div class="card"><h3>Chủ trang tạo lớp mới</h3><form id="mkForm" style="display:grid;gap:10px"><div class="namebox" style="margin:0"><input id="mkName" maxlength="40" placeholder="Tên lớp, VD: Lớp 3A – Trường Kim Đồng" aria-label="Tên lớp"></div>
+   <div class="namebox" style="margin:0"><select id="mkGrade" aria-label="Khối lớp" style="font-size:18px;padding:12px;border-radius:16px;border:3px solid var(--line);background:var(--card);color:var(--ink);min-height:52px">${[1,2,3,4,5].map(g=>`<option value="${g}">Khối ${g}</option>`).join("")}</select></div><button class="btn">Tạo lớp</button></form></div>`:""}</div>`;
  box.innerHTML=`<h2>Lớp chung</h2><p>Các bé ở nhiều máy cùng vào một lớp để làm bài thi chung, tích sao và xem bảng xếp hạng theo tuần, tháng.</p><p class="note" id="cmsg"></p>${inner}`;
  $("cmsg").textContent=CV.msg;CV.msg="";if(st&&st.kind==="pick")$("pcn").textContent=st.name;
  const pinF=$("pinForm");if(pinF)setTimeout(()=>{const el=$("pinIn");if(el)el.focus()},50)}
@@ -412,7 +491,7 @@ async function rankTab(code,c,me){const list=await CL.students(code);const k=CV.
  ${rows.length?`<table><thead><tr><th>Hạng</th><th>Tên</th><th class="n">Sao ${CV.rt==="w"?"tuần này":CV.rt==="m"?"tháng này":"tổng"}</th></tr></thead><tbody id="rk"></tbody></table>`:`<p>Lớp chưa có bạn nào. Các bé nhập mã lớp để vào nhé.</p>`}
  <p class="note">Sao được tính từ mọi bài bé làm khi đang ở trong lớp: luyện chặng, kiểm tra, thi chung và ôn câu sai. Tuần tính từ thứ Hai.</p>`;
  if(rows.length){$("rk").innerHTML=rows.map((r,i)=>`<tr${me&&me.sid===r.id?' style="background:var(--tint)"':""}><td><span class="medal">${i+1}</span></td><td><b></b></td><td class="n">${r.v}</td></tr>`).join("");[...$("rk").children].forEach((tr,i)=>tr.querySelector("b").textContent=rows[i].name)}}
-async function examTab(code,c,me){const ex=await CL.exams(code);const teach=S.teach&&S.teach[code];
+async function examTab(code,c,me){const ex=await CL.exams(code);const teach=ACC.admin;
  const mine=me?await Promise.all(ex.map(e=>CL.myResult(code,e.id,me.sid))):[];
  $("cbody").innerHTML=ex.length?`<div style="display:grid;gap:14px;margin-top:14px">${ex.map((e,i)=>`<div class="card"><h3 data-t="t${i}"></h3><p>${subN(e.sub)} lớp ${esc(e.g)} · ${e.k===3?"chặng 1–3":"cả 6 chặng"} · ${esc(e.n)} câu${e.min?` · ${esc(e.min)} phút`:""} · ${e.open?"<b style='color:var(--ok)'>Đang mở</b>":"Đã đóng"}</p>
   <div class="acts">${me?(mine[i]?`<span class="pill">Bé đã nộp: ${String(mine[i].d10).replace(".",",")} điểm (${mine[i].score}/${mine[i].n})</span>`:e.open?`<button class="btn coral" data-c="take" data-x="${esc(e.id)}">Làm bài</button>`:""):""}<button class="btn alt" data-c="res" data-x="${esc(e.id)}">Bảng điểm</button>${teach?`<button class="btn alt" data-c="toggle" data-x="${esc(e.id)}" data-o="${e.open?1:0}">${e.open?"Đóng đề":"Mở lại đề"}</button>`:""}</div><div id="res-${esc(e.id)}"></div></div>`).join("")}</div>`:`<p style="margin-top:14px">Chưa có đề thi chung nào.${teach?" Thầy cô vào thẻ Giáo viên để tạo đề.":" Khi thầy cô tạo đề, đề sẽ hiện ở đây."}</p>`;
@@ -475,7 +554,8 @@ function wRender(){const el=$("welcome");W.open=true;document.body.classList.add
 async function quickStart(code,pin){code=String(code).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}
  Object.assign(W,{code,c:null,state:"load",pin:"",msg:""});wRender();
  const ok=await CL.init();if(!ok){W.state="err";W.msg=CL.err==="nocfg"?"Trang này chưa bật Lớp chung.":"Chưa kết nối được. Hãy kiểm tra mạng rồi mở lại link.";return wRender()}
- try{W.c=await CL.getClass(code)}catch(e){W.c=null}
+ let denied=false;try{W.c=await CL.getClass(code)}catch(e){W.c=null;denied=CL.deny(e)}
+ if(!W.c&&denied)W.c={name:"mã "+code,grade:1};
  if(!W.c){W.state="err";W.msg="Không tìm thấy lớp trong đường link. Ba mẹ hỏi lại thầy cô link mới nhé.";return wRender()}
  W.state="home";if(pin&&/^\d{4,6}$/.test(pin)){const s=await CL.loginByPin(code,pin);if(s)return wGo(code,s);W.msg="Mã trong đường link đã cũ. Bé nhập mã mới thầy cô gửi nhé."}
  wRender()}
@@ -498,9 +578,7 @@ document.addEventListener("submit",async e=>{const f=e.target;if(!["codeForm","p
   return loginAs(st.code,Object.assign({id:st.sel.id},s))}
  if(f.id==="newForm"){const st=CV.step,n=$("newName").value.trim().replace(/\s+/g," "),pin=$("newPin").value.trim();if(n.length<2){CV.msg="Hãy nhập họ tên của bé.";return joinView()}if(!/^\d{4,6}$/.test(pin)){CV.msg="Mã PIN gồm 4 đến 6 chữ số.";return joinView()}
   const id=await CL.addStudent(st.code,n,pin,st.grade);return loginAs(st.code,{id,name:n,grade:st.grade,stars:0,earned:0})}
- if(f.id==="mkForm"){const n=$("mkName").value.trim(),g=+$("mkGrade").value,pin=$("mkPin").value.trim();if(n.length<2){CV.msg="Hãy nhập tên lớp.";return joinView()}if(!/^\d{4,6}$/.test(pin)){CV.msg="PIN giáo viên gồm 4 đến 6 chữ số. Hãy ghi nhớ PIN này.";return joinView()}
-  const code=await CL.createClass(n,g,pin);S.teach=S.teach||{};S.teach[code]=true;CV.code=code;CV.tab="teach";CV.msg=`Đã tạo lớp. Gửi mã ${code} cho phụ huynh để các bé vào lớp.`;save();return classView()}
- if(f.id==="tForm"){const code=$("tCode").value.trim().toUpperCase(),pin=$("tPin").value.trim();if(!(await CL.teacherOk(code,pin))){CV.msg="Mã lớp hoặc PIN giáo viên chưa đúng.";return joinView()}S.teach=S.teach||{};S.teach[code]=true;CV.code=code;CV.tab="teach";save();return classView()}
+ if(f.id==="mkForm"){const n=$("mkName").value.trim(),g=+$("mkGrade").value;if(n.length<2){CV.msg="Hãy nhập tên lớp.";return joinView()}const code=await CL.createClass(n,g);CV.code=code;CV.tab="teach";CV.msg=`Đã tạo lớp. Thêm tên học sinh để cấp mã cho các bé.`;return classView()}
  if(f.id==="bulkForm"){const names=$("bulkIn").value.split(/\n/).map(x=>x.trim().replace(/\s+/g," ")).filter(x=>x.length>1);if(!names.length){CV.msg="Hãy nhập ít nhất một tên.";return classView()}
   const c=await CL.getClass(CV.code);const r=await CL.bulkAdd(CV.code,names,c.grade);CV.issued={code:CV.code,list:r.out};CV.msg=`Đã thêm ${r.out.length} bạn.`+(r.skip.length?` Bỏ qua: ${r.skip.join(", ")}.`:"");return classView()}
  if(f.id==="exForm"){const code=CV.code,t=$("exTitle").value.trim()||`Thi thử ${subN($("exSub").value)} lớp ${$("exG").value}`;
@@ -533,7 +611,7 @@ function route(){clearInterval(tick);Q=null;try{BV.voice.stop()}catch(e){}
  const m=h.match(/^lop-([1-5])$/);
  if(m||h==="lop"){const g=m?+m[1]:(p?p.grade:1);if(p&&p.grade!==g){p.grade=g;save()}gradeView(g);v="grade";header();$("navGrade").setAttribute("aria-current","page")}
  else if(h==="on-tap"){review();v="review";mark(h)}else if(h==="bao-cao"){repG=null;report();v="report";mark(h)}
- else if(h==="shop"){shop();v="shop";mark(h)}else if(h==="rank"){rank();v="rank";mark(h)}else if(h==="guide"){v="guide";mark(h);voiceView()}else if(h==="lop-chung"){classView();v="class";mark(h)}
+ else if(h==="shop"){shop();v="shop";mark(h)}else if(h==="rank"){rank();v="rank";mark(h)}else if(h==="guide"){v="guide";mark(h);voiceView()}else if(h==="lop-chung"){classView();v="class";mark(h)}else if(h==="quan-ly"){adminView();v="admin";mark(h)}
  else if(/^bai-[1-5]-[0-5]$/.test(h)){const[,g,st]=h.split("-");if(p&&p.grade!==+g){p.grade=+g;save()}LZ.view="home";lessonView(+g,+st);v="lesson";$("navGrade").setAttribute("aria-current","page")}
  else{home();mark("home")}
  show(v);window.scrollTo({top:0})}
@@ -566,8 +644,8 @@ document.addEventListener("input",e=>{if(e.target.id==="inp"&&Q&&Q.mode==="exam"
 $("nameForm").addEventListener("submit",e=>{e.preventDefault();const n=$("nameIn").value.trim().replace(/\s+/g," ");if(!n){$("nameIn").focus();return}
  if(!S.players[n])S.players[n]=newP(S.pending||1);S.cur=n;if(S.pending){S.players[n].grade=S.pending;delete S.pending}save();$("nameIn").value="";location.hash="#lop-"+S.players[n].grade});
 [["setTimer","timer"],["setSound","sound"],["setSpeak","speak"]].forEach(([id,k])=>{$(id).checked=S[k];$(id).addEventListener("change",e=>{S[k]=e.target.checked;save()})});
-loadClassDict();
-window.BVapp={build,same,GM,parseTV,Q:()=>Q,quickStart,LZ};
+loadClassDict();refreshAcc(true);
+window.BVapp={build,same,GM,parseTV,Q:()=>Q,quickStart,LZ,acc:()=>ACC,refreshAcc};
 route();
-{const u=new URLSearchParams(location.search);if(u.get("lop"))quickStart(u.get("lop"),u.get("ma"))}
+{const u=new URLSearchParams(location.search);if(u.get("lop"))quickStart(u.get("lop"),u.get("ma"));else if(u.get("key")){const k=u.get("key").replace(/\D/g,"");try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}keyModal();KM.v=k.slice(0,8);kmRender();if(KM.v.length===8)kmSubmit()}}
 }

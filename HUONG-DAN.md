@@ -58,27 +58,49 @@ Các thông tin này được phép công khai trên trang web. Dữ liệu đư
 1. Quay lại Firebase → **Authentication → Settings → Authorized domains**.
 2. Bấm **Add domain**, nhập `ten-cua-ban.github.io`, rồi lưu.
 
-## Bước 6. Bắt đầu dùng
+## Bước 6. Tạo key gốc (làm ngay sau khi đưa trang lên mạng)
 
-**Thầy cô (làm một lần):**
-1. Mở trang, vào mục **Lớp chung → Thầy cô tạo lớp mới**. Nhập tên lớp, khối và **PIN giáo viên** (4–6 số). Hãy ghi nhớ PIN này.
-2. Ở thẻ **Giáo viên**, dán danh sách tên học sinh (mỗi dòng một tên), rồi bấm **Thêm và cấp mã**. Mỗi bé được:
-   - một **mã 6 số**;
-   - một **link riêng**: mở là vào học ngay, không cần gõ gì.
-3. Bấm **Sao chép tất cả** để gửi cho từng phụ huynh. Hoặc bấm **In thẻ đăng nhập có mã QR**: in ra, cắt từng thẻ, dán vào vở của bé.
-   Mã chỉ hiện lúc vừa cấp, nên hãy sao chép hoặc in ngay.
-4. Gửi **link lớp** (ô "Đường link vào lớp") vào nhóm Zalo của lớp.
+Trang có hai loại key:
 
-**Các bé đăng nhập bằng một trong ba cách:**
-- **Mở link riêng hoặc quét mã QR trên thẻ:** vào thẳng bản đồ học.
-- **Mở link lớp → bấm "Nhập mã của bé" → gõ 6 số:** vào học.
-- **Những lần sau trên cùng máy:** mở link lớp, bấm **Tiếp tục học**.
+| Loại | Ai giữ | Mở được gì |
+|---|---|---|
+| **Key gốc** | Chỉ chủ trang | Tất cả: tạo lớp, tạo đề thi chung, chọn đề kiểm tra 3 mức nào được mở, cấp và thu hồi key học sinh |
+| **Key học sinh** (8 số) | Mỗi bé một key | Vào Lớp chung, làm đề thi chung, làm các đề kiểm tra 3 mức mà chủ trang đã mở |
 
-Sau khi vào, bé học các chặng như bình thường. Sao tự cộng vào bảng xếp hạng của lớp. Bé vào thẻ **Thi chung** trong mục Lớp chung để làm đề thầy cô giao.
+Không có key, bé vẫn học các chặng, bài học có hình, ôn câu sai, đổi quà như bình thường. Chỉ **Lớp chung** và **Kiểm tra theo 3 mức** bị khoá.
 
-**Khi bé quên mã hoặc lộ mã:** ở danh sách học sinh, bấm **Cấp mã mới**. Mã và link cũ của bé hết hiệu lực ngay, nhưng sao và tiến trình của bé vẫn giữ nguyên.
+1. **Dán lại luật bảo mật mới:** Firebase → Firestore Database → **Rules** → xoá hết → dán toàn bộ nội dung tệp `firestore.rules` mới → **Publish**. (Bắt buộc. Thiếu bước này thì key không có tác dụng.)
+2. Mở trang, gõ thêm `#quan-ly` vào cuối địa chỉ, ví dụ `https://ten.github.io/be-vui-hoc/#quan-ly`.
+3. Ở ô **Tạo key gốc lần đầu**, nhập key gốc hai lần (ít nhất 8 kí tự, nên có chữ, số và kí hiệu), bấm **Tạo key gốc**. **Ghi key gốc ra giấy cất kĩ.** Trang không lưu key gốc ở dạng đọc được, nên không ai xem lại được.
+   Hãy làm bước này ngay: ai tạo key gốc trước thì người đó là chủ trang.
+4. Sau khi đăng nhập, menu có thêm mục **Quản lý**.
 
-**Thầy cô dùng máy khác:** vào **Lớp chung → Thầy cô vào lớp đã có**, nhập mã lớp và PIN giáo viên.
+**Cấp key cho học sinh** (mục Quản lý → Cấp key học sinh):
+- Chọn số key (tối đa 100 một lần), ghi chú (VD "Lớp 3A"), hạn dùng (không hạn, 30 ngày… 1 năm), rồi bấm **Tạo key**.
+- Gửi mỗi bé một key: bấm **Sao chép tất cả**, hoặc **In thẻ key có mã QR**. Mỗi key có sẵn **link mở nhanh** (`…?key=12345678`): bé mở link là máy tự mở khoá.
+- Bé chỉ nhập key **một lần**, máy nhớ cho những lần sau.
+- Danh sách key cho biết mỗi key đã dùng trên mấy máy. Thấy key bị lộ (dùng trên quá nhiều máy), bấm **Thu hồi**: mọi máy dùng key đó mất quyền ngay. Bấm **Mở lại** nếu thu hồi nhầm.
+
+**Mở đề kiểm tra 3 mức:** ở bảng **Mở đề kiểm tra 3 mức**, tick đề nào (VD Lớp 3 – Toán giữa năm) rồi bấm **Lưu**. Học sinh có key chỉ thấy các đề đã tick. Các đề chưa mở hiện hình ổ khoá.
+
+**Lớp chung:**
+1. Chủ trang vào **Lớp chung → Chủ trang tạo lớp mới** (chỉ hiện khi đã đăng nhập key gốc). Nhập tên lớp, khối.
+2. Ở thẻ **Giáo viên**, dán danh sách tên học sinh (mỗi dòng một tên), bấm **Thêm và cấp mã**. Mỗi bé được một **mã 6 số** và một **link riêng**. Mã của bé cũng là chìa khoá vào lớp: bé có mã thì không cần key học sinh nữa.
+3. Bấm **Sao chép tất cả** hoặc **In thẻ đăng nhập có mã QR**. Mã chỉ hiện lúc vừa cấp.
+4. Tạo đề thi chung ở thẻ **Giáo viên**. Chỉ chủ trang tạo và đóng/mở đề được.
+
+**Các bé vào Lớp chung bằng một trong các cách:**
+- Mở link riêng hoặc quét mã QR trên thẻ: vào thẳng bản đồ học.
+- Vào mục Lớp chung, nhập **mã lớp + mã của bé**.
+- Vào mục Lớp chung, bấm **Nhập key học sinh**, gõ 8 số, rồi nhập mã lớp và chọn tên.
+
+**Khi bé quên mã hoặc lộ mã:** ở danh sách học sinh, bấm **Cấp mã mới**. Mã và link cũ hết hiệu lực ngay; sao và tiến trình của bé vẫn giữ nguyên.
+
+**Chủ trang dùng máy khác:** mở `#quan-ly`, nhập key gốc ở ô **Đăng nhập chủ trang**.
+
+**Đổi key gốc:** mục Quản lý → **Đổi key gốc**. Mọi máy quản trị khác phải đăng nhập lại bằng key mới.
+
+**Quên key gốc:** vào Firebase → Firestore Database → Data → mở bộ sưu tập `config` → xoá tài liệu `master`. Sau đó mở `#quan-ly` và tạo key gốc mới. Key học sinh, lớp và điểm vẫn giữ nguyên.
 
 ---
 
@@ -131,9 +153,11 @@ Gói miễn phí Spark của Firebase cho mỗi ngày 50.000 lượt đọc và 
 
 ## Lưu ý về an toàn
 
-- Mã 6 số và link riêng giúp các bé vào học nhanh, chứ không phải mật khẩu bảo mật cao. Ai có link riêng của bé thì vào được tài khoản của bé, vì vậy chỉ gửi link riêng cho đúng phụ huynh. Không lưu thông tin nhạy cảm trong trang.
-- Luật bảo mật không cho xoá dữ liệu, không cho sửa điểm thi đã nộp và không cho đổi PIN giáo viên.
-- Quyền giáo viên (tạo đề, đặt lại PIN) được kiểm tra bằng PIN giáo viên ngay trên trang. Hãy chỉ chia sẻ địa chỉ trang và mã lớp cho phụ huynh trong lớp.
+- **Phần được khoá thật trên máy chủ:** mọi dữ liệu Lớp chung (danh sách lớp, học sinh, đề thi chung, điểm, xếp hạng) và danh sách key. Firebase kiểm tra key trước khi trả dữ liệu, nên dù ai đó sửa mã trang trên máy họ cũng không đọc hay ghi được.
+- **Phần khoá trên trang:** đề **Kiểm tra theo 3 mức** được tạo từ ngân hàng câu hỏi nằm trong các tệp `.js` công khai. Người không có key không bấm vào làm được, nhưng người rành máy tính vẫn có thể đọc câu hỏi trong mã nguồn. Muốn giữ đề thật kín, hãy dùng **đề thi chung trong Lớp chung**.
+- Key gốc và key học sinh chỉ được lưu ở dạng mã hoá một chiều (SHA-256). Danh sách key học sinh chỉ chủ trang xem được.
+- Mã 6 số và link riêng giúp các bé vào học nhanh. Chỉ gửi link riêng cho đúng phụ huynh.
+- Luật bảo mật không cho xoá dữ liệu và không cho sửa điểm thi đã nộp.
 
 ## Các tệp trong gói
 
@@ -141,7 +165,7 @@ Gói miễn phí Spark của Firebase cho mỗi ngày 50.000 lượt đọc và 
 |---|---|
 | `index.html` | Trang chính |
 | `app.js` | Phần chạy chính của trang |
-| `cloud.js` | Kết nối Firebase cho mục Lớp chung |
+| `cloud.js` | Kết nối Firebase cho Lớp chung, key gốc và key học sinh |
 | `tranh.js` | Bộ tranh minh hoạ tự vẽ (con vật, hoa quả, đồ vật, thiên nhiên, hình cho Toán) |
 | `baihoc.js` | Bài học có hình của 30 chặng: thẻ học và 12 bài tập có tranh mỗi chặng |
 | `giongdoc.js` | Giọng cô giáo: chuẩn hoá cách đọc và chọn giọng |
@@ -149,4 +173,4 @@ Gói miễn phí Spark của Firebase cho mỗi ngày 50.000 lượt đọc và 
 | `qrcode.js` | Tạo mã QR cho thẻ đăng nhập (thư viện mã nguồn mở, giấy phép MIT) |
 | `firebase-config.js` | Nơi dán cấu hình Firebase (Bước 3) |
 | `firestore.rules` | Luật bảo mật dán vào Firebase (Bước 2) |
-| `lopN.js`, `lopN-them.js` | Câu hỏi lớp 1–5. Thầy cô có thể mở bằng trình soạn thảo để thêm hoặc sửa câu |
+| `data/lopN.js`, `data/lopN-them.js` | Câu hỏi lớp 1–5. Thầy cô có thể mở bằng trình soạn thảo để thêm hoặc sửa câu |

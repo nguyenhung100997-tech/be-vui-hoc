@@ -1,50 +1,104 @@
 rules_version = '2';
-// Luật bảo mật cho "Bé Vui Học – Lớp chung".
-// Chỉ máy đã mở trang (đăng nhập ẩn danh) mới đọc/ghi được; không ai xoá được dữ liệu.
+// Luật bảo mật cho Bé Vui Học: key gốc (quản trị), key học sinh, lớp chung.
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
 
-    // Bộ nhớ chung các câu đã đọc bằng giọng Google (mỗi câu chỉ tạo một lần)
+    // Quản trị: máy đã đăng nhập bằng key gốc đúng (key gốc đổi thì quyền cũ mất).
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.h
+           == get(/databases/$(database)/documents/config/master).data.h;
+    }
+    function keyOk(kh) {
+      return exists(/databases/$(database)/documents/keys/$(kh))
+        && get(/databases/$(database)/documents/keys/$(kh)).data.active == true
+        && (!('exp' in get(/databases/$(database)/documents/keys/$(kh)).data)
+            || get(/databases/$(database)/documents/keys/$(kh)).data.exp > request.time.toMillis());
+    }
+    function credOk(m) {
+      return (m.via == 'key' && keyOk(m.kh))
+        || (m.via == 'pin' && exists(/databases/$(database)/documents/pins/$(m.pk)));
+    }
+    // Học sinh: máy đã nhập key học sinh còn hiệu lực, hoặc mã của bé trong lớp còn hiệu lực.
+    function isMember() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && credOk(get(/databases/$(database)/documents/members/$(request.auth.uid)).data);
+    }
+    function canUse() { return isAdmin() || isMember(); }
+
+    match /config/master {
+      allow read: if false;
+      allow create: if signedIn() && request.resource.data.h is string && request.resource.data.h.size() == 64;
+      allow update: if isAdmin() && request.resource.data.h is string && request.resource.data.h.size() == 64;
+      allow delete: if false;
+    }
+    match /config/open {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /config/dict {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.h == get(/databases/$(database)/documents/config/master).data.h;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+    match /keys/{kh} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+    match /members/{uid} {
+      allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
+      allow create, update: if signedIn() && request.auth.uid == uid && credOk(request.resource.data);
+      allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+    }
+    match /pins/{pk} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create, update, delete: if canUse();
+    }
     match /tts/{id} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.a is string && request.resource.data.a.size() < 800000;
+      allow create: if canUse() && request.resource.data.a is string && request.resource.data.a.size() < 800000;
       allow update, delete: if false;
     }
 
     match /classes/{code} {
-      allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.keys().hasAll(['name', 'grade', 'tH'])
-        && request.resource.data.name is string && request.resource.data.name.size() <= 60;
-      // Không cho đổi PIN giáo viên của lớp
-      allow update: if signedIn() && request.resource.data.tH == resource.data.tH;
+      allow get: if canUse();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin();
       allow delete: if false;
 
       match /students/{sid} {
-        allow read: if signedIn();
-        allow create: if signedIn()
+        allow read: if canUse();
+        allow create: if canUse()
           && request.resource.data.name is string
           && request.resource.data.name.size() <= 40
           && request.resource.data.stars == 0;
-        allow update: if signedIn();
+        allow update: if canUse();
         allow delete: if false;
       }
-
       match /events/{eid} {
-        allow read: if signedIn();
-        allow create: if signedIn() && request.resource.data.gain is int && request.resource.data.gain <= 60;
+        allow read: if canUse();
+        allow create: if canUse() && request.resource.data.gain is int && request.resource.data.gain <= 60;
         allow update, delete: if false;
       }
-
       match /exams/{xid} {
-        allow read, create, update: if signedIn();
+        allow read: if canUse();
+        allow create, update: if isAdmin();
         allow delete: if false;
 
         match /results/{sid} {
-          allow read: if signedIn();
-          // Mỗi bạn chỉ nộp một lần, không sửa được điểm đã nộp
-          allow create: if signedIn() && !exists(/databases/$(database)/documents/classes/$(code)/exams/$(xid)/results/$(sid));
+          allow read: if canUse();
+          allow create: if canUse()
+            && !exists(/databases/$(database)/documents/classes/$(code)/exams/$(xid)/results/$(sid));
           allow update, delete: if false;
         }
       }
