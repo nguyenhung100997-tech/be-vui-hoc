@@ -54,8 +54,8 @@ const add=(o,k,ok)=>{const v=o[k]||[0,0];v[1]++;if(ok)v[0]++;o[k]=v};
 /* ---------- âm thanh, giọng đọc ---------- */
 let ac=null;
 function beep(ok){if(!S.sound)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();(ok?[660,880]:[300,220]).forEach((fr,i)=>{const o=ac.createOscillator(),gn=ac.createGain(),t=ac.currentTime+i*.12;o.frequency.value=fr;o.type="triangle";gn.gain.setValueAtTime(.16,t);gn.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(gn).connect(ac.destination);o.start(t);o.stop(t+.3)})}catch(e){}}
-const canSpeak="speechSynthesis" in window;
-function speak(t){if(!canSpeak)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/…|\.{3}/g," chỗ trống ").replace(/−/g," trừ ").replace(/×/g," nhân ").replace(/ : /g," chia ").replace(/=/g," bằng "));u.lang="vi-VN";u.rate=.9;const v=speechSynthesis.getVoices().find(v=>/^vi/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}}
+const canSpeak=!!(BV.voice&&BV.voice.available());
+function speak(t){if(BV.voice)BV.voice.speak(t)}
 
 /* ---------- hình minh hoạ ---------- */
 const ITEM={
@@ -323,6 +323,46 @@ document.addEventListener("click",e=>{const t=e.target;
  const lc=t.closest("[data-lcard]");if(lc){const v=lc.dataset.lcard;if(v==="done"){const p=P();if(p){const st=lesP(p,LZ.g,LZ.s);if(!st.c){st.c=1;p.stars+=2;p.earned+=2}save();header()}startLes(LZ.g,LZ.s);return}LZ.ci+=+v;LZ.flip=false;cardsView(LZ.g,LZ.s);return}
  const mt=t.closest("[data-mt]");if(mt){gameClick(+mt.dataset.mt);return}
  if(t.closest("[data-lspeak]")){speak(BV.LES[LZ.g][LZ.s].intro);return}});
+/* ---------- bảng cài đặt giọng cô giáo ---------- */
+const SAMPLE="Chào các con! Hôm nay cô cùng các con học bài nhé. 25 + 17 = 42. Tiếng “nghé” bắt đầu bằng âm “ngh”. Quả cam nặng 2,5 kg. 3/4 cái bánh.";
+async function voiceView(){const box=$("voiceBox");if(!box)return;const V=BV.voice,vs=V.voices(),cloud=!!(window.BV_TTS&&BV_TTS.apiKey);let cv=[];if(cloud){try{cv=await V.listCloud()}catch(e){cv=[]}}
+ const cur=V.cloudOn()&&cv.length?"Giọng Google Cloud: "+(V.cfg.cvoice||(BV_TTS.voice)||cv.find(v=>v.g==="FEMALE")?.name||cv[0]?.name):vs.length?"Giọng trên máy: "+V.current():"Máy này chưa có giọng tiếng Việt";
+ const myCode=Object.keys(S.teach||{})[0]||null;const dict=V.cfg.dict||{},cdict=V.classDict||{};
+ box.innerHTML=`<h3>Giọng cô giáo</h3><p class="note" style="margin-top:2px">Đang dùng: <b id="vcur"></b></p>
+ ${!vs.length&&!cloud?`<div class="weak"><div>Máy chưa có giọng đọc tiếng Việt. Xem cách cài ở cuối khung này.</div></div>`:""}
+ <div style="display:grid;gap:10px;margin-top:10px">
+ ${cloud&&cv.length?`<label class="vrow">Giọng Google<select id="vcloud">${cv.map(v=>`<option value="${esc(v.name)}" ${v.name===(V.cfg.cvoice||BV_TTS.voice)?"selected":""}>${esc(v.name.replace("vi-VN-",""))} · ${v.g==="FEMALE"?"nữ":"nam"}</option>`).join("")}</select></label>
+  <label class="vrow">Nguồn giọng<select id="veng"><option value="auto" ${V.cfg.engine!=="local"?"selected":""}>Google Cloud (chuẩn nhất)</option><option value="local" ${V.cfg.engine==="local"?"selected":""}>Giọng trên máy</option></select></label>`:""}
+ ${vs.length?`<label class="vrow">Giọng trên máy<select id="vlocal">${vs.map(v=>`<option value="${esc(v.name)}" ${v.name===V.current()?"selected":""}>${esc(v.name)}</option>`).join("")}</select></label>`:""}
+ <label class="vrow">Tốc độ đọc<input type="range" id="vrate" min="0.6" max="1.1" step="0.05" value="${V.cfg.rate}"><span id="vrv">${Math.round(V.cfg.rate*100)}%</span></label>
+ <div class="acts"><button class="btn g" id="vtest">Nghe thử giọng cô</button><button class="btn alt" id="vstop">Dừng</button></div>
+ <label style="font-weight:700">Gõ câu bất kì để nghe thử
+ <textarea id="vtxt" rows="2" style="width:100%;font:inherit;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);margin-top:4px">${esc(SAMPLE)}</textarea></label>
+ <p class="note" style="margin:0">Máy sẽ đọc là: <i id="vprev"></i></p>
+ <div class="acts"><button class="btn alt" id="vsay">Đọc câu này</button></div>
+ <h3 style="margin-top:10px">Sửa cách đọc</h3><p class="note" style="margin:0">Nếu nghe thấy từ nào đọc chưa chuẩn, ghi cách viết và cách đọc đúng. Trang sẽ đọc theo cách bạn sửa.</p>
+ <div class="namebox" style="margin-top:6px"><input id="dw" placeholder="Chữ viết, VD: km/giờ" aria-label="Chữ viết"><input id="dr" placeholder="Đọc là, VD: ki lô mét trên giờ" aria-label="Đọc là"><button class="btn" id="dadd">Thêm</button></div>
+ <div id="dlist"></div>
+ ${myCode?`<div class="acts"><button class="btn coral" id="dclass">Áp dụng bảng sửa cho cả lớp ${esc(myCode)}</button></div><p class="note" id="dmsg" style="margin:0"></p>`:""}
+ <details style="margin-top:6px"><summary style="font-weight:800;cursor:pointer">Cách có giọng tiếng Việt hay trên máy</summary><ul>
+  <li><b>Máy tính Windows:</b> mở trang bằng trình duyệt <b>Microsoft Edge</b> để có giọng nữ “HoaiMy (Natural)” rất tự nhiên.</li>
+  <li><b>Điện thoại Android:</b> Cài đặt → Hệ thống → Ngôn ngữ → Chuyển văn bản thành giọng nói → chọn “Dịch vụ lời nói của Google”, tải gói tiếng Việt.</li>
+  <li><b>iPhone, iPad:</b> Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → Tiếng Việt → tải giọng “Linh” (bản nâng cao).</li>
+  <li><b>Chuẩn nhất trên mọi máy:</b> bật giọng Google Cloud theo tệp HƯỚNG DẪN (phần “Giọng cô giáo”).</li></ul></details></div>`;
+ $("vcur").textContent=cur;const prev=()=>{$("vprev").textContent=V.normalize($("vtxt").value)};prev();
+ const dl=Object.entries(Object.assign({},cdict,dict));$("dlist").innerHTML=dl.length?`<table><tbody>${dl.map(([k,v])=>`<tr><td data-k></td><td data-v></td><td>${dict[k]!=null?`<button class="btn alt" data-ddel="${esc(k)}" style="min-height:34px;padding:4px 10px">Xoá</button>`:`<span class="note">của lớp</span>`}</td></tr>`).join("")}</tbody></table>`:"";
+ [...$("dlist").querySelectorAll("tr")].forEach((tr,i)=>{tr.querySelector("[data-k]").textContent=dl[i][0];tr.querySelector("[data-v]").textContent="→ "+dl[i][1]});
+ $("vtxt").addEventListener("input",prev);
+ $("vrate").addEventListener("input",e=>{V.cfg.rate=+e.target.value;$("vrv").textContent=Math.round(V.cfg.rate*100)+"%";V.save()});
+ if($("vlocal"))$("vlocal").addEventListener("change",e=>{V.cfg.voice=e.target.value;V.save();voiceView()});
+ if($("vcloud"))$("vcloud").addEventListener("change",e=>{V.cfg.cvoice=e.target.value;V.save();voiceView()});
+ if($("veng"))$("veng").addEventListener("change",e=>{V.cfg.engine=e.target.value;V.save();voiceView()});
+ $("vtest").onclick=()=>V.speak(SAMPLE);$("vstop").onclick=()=>V.stop();$("vsay").onclick=()=>V.speak($("vtxt").value);
+ $("dadd").onclick=()=>{const k=$("dw").value.trim(),v=$("dr").value.trim();if(!k||!v)return;V.cfg.dict=Object.assign({},V.cfg.dict,{[k]:v});V.save();voiceView()};
+ $("dlist").onclick=e=>{const b=e.target.closest("[data-ddel]");if(!b)return;const d=Object.assign({},V.cfg.dict);delete d[b.dataset.ddel];V.cfg.dict=d;V.save();voiceView()};
+ if($("dclass"))$("dclass").onclick=async()=>{try{const ok=await CL.init();if(!ok)throw new Error("Chưa kết nối lớp chung");const d=Object.assign({},V.classDict,V.cfg.dict);await CL.db.set(`classes/${myCode}`,{dict:d});V.classDict=d;$("dmsg").textContent="Đã áp dụng cho cả lớp. Máy các bé sẽ nhận bảng sửa khi mở trang."}catch(err){$("dmsg").textContent="Chưa lưu được: "+err.message}}}
+if(BV.voice)BV.voice.onchange=()=>{if($("v-guide")&&$("v-guide").classList.contains("on"))voiceView()};
+async function loadClassDict(){const p=P();const code=p&&p.cls?p.cls.code:Object.keys(S.teach||{})[0];if(!code||!window.BV_FIREBASE)return;try{if(!(await CL.init()))return;const c=await CL.getClass(code);BV.voice.classDict=(c&&c.dict)||{}}catch(e){}}
 /* ---------- lớp chung (nhiều máy, lưu trên Firebase) ---------- */
 const progOf=p=>({best:p.best,st:p.st,lv:p.lv,owned:p.owned,tests:p.tests.slice(0,20),rv:p.rv.slice(-120)});
 let syncT=null;
@@ -412,7 +452,7 @@ async function teachTab(code,c){const list=await CL.students(code);const iss=CV.
  if(list.length){$("stl").innerHTML=list.map(s=>`<tr><td><b></b><div class="note" style="margin:0">Lớp ${esc(s.grade)}${s.last?` · học gần nhất ${fmtT(s.last)}`:""}</div></td><td class="n">${s.earned||0}</td><td><div class="acts"><button class="btn alt" data-c="rpin" data-sid="${esc(s.id)}" style="padding:6px 10px;min-height:36px">Cấp mã mới</button><button class="btn alt" data-c="hide" data-sid="${esc(s.id)}" style="padding:6px 10px;min-height:36px">Ẩn</button></div></td></tr>`).join("");[...$("stl").children].forEach((tr,i)=>tr.querySelector("b").textContent=list[i].name)}}
 function loginAs(code,s,dest){const key=`${s.name} · ${code}`;let pr={};try{pr=s.prog?JSON.parse(s.prog):{}}catch(e){}
  const p=Object.assign(newP(s.grade||1),pr,{grade:s.grade||1,stars:s.stars||0,earned:s.earned||0,cls:{code,sid:s.id,name:s.name}});
- S.players[key]=p;S.cur=key;CV.step=null;CV.code=code;save();header();
+ S.players[key]=p;S.cur=key;CV.step=null;CV.code=code;save();header();loadClassDict();
  if(dest){location.hash=dest}else{location.hash="#lop-chung";classView()}}
 /* ---------- màn chào mừng: đăng nhập nhanh bằng link ---------- */
 const W={open:false};
@@ -486,14 +526,14 @@ document.addEventListener("click",async e=>{const t=e.target;const ct=t.closest(
 
 /* ---------- điều hướng ---------- */
 function show(v){document.querySelectorAll(".view").forEach(e=>e.classList.toggle("on",e.id==="v-"+v));header()}
-function route(){clearInterval(tick);Q=null;try{speechSynthesis.cancel()}catch(e){}
+function route(){clearInterval(tick);Q=null;try{BV.voice.stop()}catch(e){}
  const h=location.hash.slice(1),p=P();let v="home";
  document.querySelectorAll("nav a").forEach(a=>a.removeAttribute("aria-current"));
  const mark=sel=>{const a=document.querySelector(`nav a[href="#${sel}"]`);if(a)a.setAttribute("aria-current","page")};
  const m=h.match(/^lop-([1-5])$/);
  if(m||h==="lop"){const g=m?+m[1]:(p?p.grade:1);if(p&&p.grade!==g){p.grade=g;save()}gradeView(g);v="grade";header();$("navGrade").setAttribute("aria-current","page")}
  else if(h==="on-tap"){review();v="review";mark(h)}else if(h==="bao-cao"){repG=null;report();v="report";mark(h)}
- else if(h==="shop"){shop();v="shop";mark(h)}else if(h==="rank"){rank();v="rank";mark(h)}else if(h==="guide"){v="guide";mark(h)}else if(h==="lop-chung"){classView();v="class";mark(h)}
+ else if(h==="shop"){shop();v="shop";mark(h)}else if(h==="rank"){rank();v="rank";mark(h)}else if(h==="guide"){v="guide";mark(h);voiceView()}else if(h==="lop-chung"){classView();v="class";mark(h)}
  else if(/^bai-[1-5]-[0-5]$/.test(h)){const[,g,st]=h.split("-");if(p&&p.grade!==+g){p.grade=+g;save()}LZ.view="home";lessonView(+g,+st);v="lesson";$("navGrade").setAttribute("aria-current","page")}
  else{home();mark("home")}
  show(v);window.scrollTo({top:0})}
@@ -513,7 +553,7 @@ document.addEventListener("click",e=>{const t=e.target;
  if(t.closest("#hint")){const p=P(),q=Q.qs[Q.i];if(Q.hint||Q.done||p.stars<1)return;p.stars--;Q.hint=true;save();header();const wr=shuffle(q.opts.filter(x=>x!==q.a)).slice(0,2);document.querySelectorAll(".opt").forEach(b=>{if(wr.includes(q.opts[+b.dataset.o])){b.disabled=true;b.classList.add("gone")}});t.closest("#hint").disabled=true;return}
  if(t.closest("#next")){next();return}
  if(t.closest("#prev")){const q=Q.qs[Q.i];if(q.t==="in"&&$("inp"))Q.ans[Q.i]=$("inp").value.trim()||null;Q.i--;drawQ();return}
- if(t.closest("#spk")&&Q){const q=Q.qs[Q.i];speak((q.p?q.p+". ":"")+q.q+(q.t==="mcq"?". "+q.opts.map((x,i)=>`${i+1}: ${x}`).join(". "):""));return}
+ if(t.closest("#spk")&&Q){const q=Q.qs[Q.i];speak((q.p?q.p+". ":"")+q.q+(q.t==="mcq"?". "+q.opts.map((x,i)=>`Ý ${i+1}: ${x}`).join(". ")+".":""));return}
  if(t.closest("#goRv")){startReview();return}
  const rp=t.closest("[data-rep]");if(rp){repG=+rp.dataset.rep;report();return}
  if(t.closest("#copyRep")){const txt=reportText();try{navigator.clipboard.writeText(txt).then(()=>{$("copyMsg").textContent="Đã sao chép. Bé hoặc cha mẹ có thể dán vào tin nhắn gửi thầy cô."},()=>{$("copyMsg").textContent="Trình duyệt không cho sao chép tự động."})}catch(err){$("copyMsg").textContent="Trình duyệt không cho sao chép tự động."}return}
@@ -526,6 +566,7 @@ document.addEventListener("input",e=>{if(e.target.id==="inp"&&Q&&Q.mode==="exam"
 $("nameForm").addEventListener("submit",e=>{e.preventDefault();const n=$("nameIn").value.trim().replace(/\s+/g," ");if(!n){$("nameIn").focus();return}
  if(!S.players[n])S.players[n]=newP(S.pending||1);S.cur=n;if(S.pending){S.players[n].grade=S.pending;delete S.pending}save();$("nameIn").value="";location.hash="#lop-"+S.players[n].grade});
 [["setTimer","timer"],["setSound","sound"],["setSpeak","speak"]].forEach(([id,k])=>{$(id).checked=S[k];$(id).addEventListener("change",e=>{S[k]=e.target.checked;save()})});
+loadClassDict();
 window.BVapp={build,same,GM,parseTV,Q:()=>Q,quickStart,LZ};
 route();
 {const u=new URLSearchParams(location.search);if(u.get("lop"))quickStart(u.get("lop"),u.get("ma"))}

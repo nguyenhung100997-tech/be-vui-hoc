@@ -228,6 +228,8 @@ body.wopen{overflow:hidden}
 .opt.pim b{position:absolute;top:6px;left:6px}
 @media(max-width:900px){.lesgrid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.popts{grid-template-columns:repeat(2,minmax(0,1fr))}.mgrid{grid-template-columns:repeat(3,minmax(0,1fr))}.fcard{height:340px}}
+.vrow{display:grid;grid-template-columns:8em minmax(0,1fr) auto;gap:10px;align-items:center;font-weight:700}.vrow select{font:inherit;font-size:16px;padding:8px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-height:44px}.vrow input[type=range]{accent-color:var(--blue)}
+@media(max-width:600px){.vrow{grid-template-columns:minmax(0,1fr)}}
 footer{padding:22px max(5vw,16px);text-align:center;color:var(--soft);font-size:14px;border-top:2px solid var(--line)}
 @media(max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){
@@ -327,6 +329,7 @@ footer{padding:22px max(5vw,16px);text-align:center;color:var(--soft);font-size:
   <label class="toggle"><input type="checkbox" id="setSpeak"> Tự đọc câu hỏi ở lớp 1 và lớp 2</label>
   <p class="note">Câu Toán được tạo ngẫu nhiên nên mỗi lần là một đề mới. Câu Tiếng Việt và các đoạn đọc hiểu do Bé Vui Học tự soạn theo dạng bài trong sách. Tiến trình được lưu trong trình duyệt của máy đang dùng.</p>
  </div>
+ <div class="card" style="margin-top:22px" id="voiceBox"></div>
 </div></div></section>
 </main>
 <div id="welcome"></div><div id="printArea"></div>
@@ -373,6 +376,8 @@ BV.H.capV=name=>{const cap=w=>w.split("-").map((s,i)=>i===0?s.charAt(0).toUpperC
 <script src="lop5-them.js"></script>
 <script src="tranh.js"></script>
 <script src="baihoc.js"></script>
+<script src="giongdoc-config.js"></script>
+<script src="giongdoc.js"></script>
 <script src="firebase-config.js"></script>
 <script src="qrcode.js"></script>
 <script src="cloud.js"></script>

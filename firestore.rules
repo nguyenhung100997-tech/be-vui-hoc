@@ -5,6 +5,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
 
+    // Bộ nhớ chung các câu đã đọc bằng giọng Google (mỗi câu chỉ tạo một lần)
+    match /tts/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.a is string && request.resource.data.a.size() < 800000;
+      allow update, delete: if false;
+    }
+
     match /classes/{code} {
       allow read: if signedIn();
       allow create: if signedIn()
