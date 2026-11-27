@@ -151,6 +151,28 @@ Sau khi bật, mục **Giọng cô giáo** sẽ hiện danh sách giọng Google
 
 Gói miễn phí Spark của Firebase cho mỗi ngày 50.000 lượt đọc và 20.000 lượt ghi. Một lớp 20 bé chỉ dùng một phần nhỏ trong số đó.
 
+## Nội dung 40 chặng mỗi lớp
+
+Mỗi lớp có 40 chặng, chia thành 4 vùng trên bản đồ:
+
+| Chặng | Nội dung |
+|---|---|
+| 1–9, 11–19, 21–29, 31–38 | 35 tuần học, xếp theo thứ tự chủ đề của sách Toán và Tiếng Việt *Kết nối tri thức với cuộc sống* |
+| 10, 20, 30, 39 | Ôn tập giữa học kì 1, cuối học kì 1, giữa học kì 2, cuối năm |
+| 40 | Thử thách cuối năm: tổng hợp, toán nâng cao và truyện đọc dài |
+
+Mỗi chặng gồm:
+- **Bài học có hình**: thẻ học và 12 bài tập có tranh.
+- **Trạm Toán**: câu hỏi 3 mức, có cả bài *Toán đọc hiểu* (đọc đoạn văn có số liệu rồi giải).
+- **Trạm Tiếng Việt**: một **truyện đọc mới** kèm 5 câu hỏi từ dễ đến khó, và các câu luyện từ và câu của tuần.
+- **Thử thách tư duy** (nút ★): bài toán nâng cao và câu Tiếng Việt cần suy luận. Mỗi câu đúng được 2 sao. Không bắt buộc để mở chặng sau.
+
+Các truyện đọc do Bé Vui Học tự viết theo chủ điểm của sách, không chép nguyên văn bài trong sách giáo khoa.
+
+Bé đã học bản 6 chặng cũ: sao vẫn giữ nguyên, các chặng tương ứng với phần bé đã qua được mở sẵn. Máy đăng nhập bằng key gốc thấy mọi chặng đều mở.
+
+**Đề kiểm tra 3 mức:** đề giữa năm lấy câu trong học kì 1 (chặng 1–20), đề cuối năm lấy cả 40 chặng.
+
 ## Lưu ý về an toàn
 
 - **Phần được khoá thật trên máy chủ:** mọi dữ liệu Lớp chung (danh sách lớp, học sinh, đề thi chung, điểm, xếp hạng) và danh sách key. Firebase kiểm tra key trước khi trả dữ liệu, nên dù ai đó sửa mã trang trên máy họ cũng không đọc hay ghi được.
@@ -166,6 +188,9 @@ Gói miễn phí Spark của Firebase cho mỗi ngày 50.000 lượt đọc và 
 | `index.html` | Trang chính |
 | `app.js` | Phần chạy chính của trang |
 | `cloud.js` | Kết nối Firebase cho Lớp chung, key gốc và key học sinh |
+| `chang40.js` | Bộ máy 40 chặng: 35 tuần học theo sách và 5 chặng ôn tập |
+| `data/lopN-40.js` | Nội dung 40 chặng của lớp N: kỹ năng Toán, chủ đề Tiếng Việt, truyện đọc hiểu, bài nâng cao |
+| `baihoc40.js` | Tự dựng bài học có hình (thẻ học + 12 bài có tranh) cho cả 200 chặng |
 | `tranh.js` | Bộ tranh minh hoạ tự vẽ (con vật, hoa quả, đồ vật, thiên nhiên, hình cho Toán) |
 | `baihoc.js` | Bài học có hình của 30 chặng: thẻ học và 12 bài tập có tranh mỗi chặng |
 | `giongdoc.js` | Giọng cô giáo: chuẩn hoá cách đọc và chọn giọng |

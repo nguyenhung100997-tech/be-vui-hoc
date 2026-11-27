@@ -48,7 +48,15 @@ const best=(p,g,s,sub)=>p&&p.best[bk(g,s,sub)]!=null?p.best[bk(g,s,sub)]:-1;
 const qlen=(g,sub)=>sub==="v"?Math.min(GM[g].nq,8):GM[g].nq;
 const passN=(g,sub)=>Math.ceil(qlen(g,sub)*PASS);
 const stageDone=(p,g,s)=>best(p,g,s,"t")>=passN(g,"t")&&best(p,g,s,"v")>=passN(g,"v");
-const unlocked=(p,g,s)=>s===0||stageDone(p,g,s-1);
+const unlocked=(p,g,s)=>s===0||(typeof ACC!=="undefined"&&ACC.admin)||!!(p&&p.skip&&p.skip[g]!=null&&p.skip[g]>=s-1)||stageDone(p,g,s-1);
+const NS=g=>BV.G[g].toan.length;
+const placeOf=(g,s)=>{const m=BV.G[g].meta;return m&&m[s]?m[s].place:GM[g].places[s]};
+const stageTag=(g,s)=>{const m=BV.G[g].meta&&BV.G[g].meta[s];if(!m)return"Chặng "+(s+1);return m.k==="w"?`Chặng ${s+1} · Tuần ${m.w}`:m.k==="final"?`Chặng ${s+1} · Thử thách cuối năm`:`Chặng ${s+1} · ${m.title}`};
+const ncBest=(p,g,s)=>p&&p.nc&&p.nc[`${g}-${s}`]!=null?p.nc[`${g}-${s}`]:-1;
+/* chuyển tiến trình 6 chặng cũ sang 40 chặng: giữ sao, mở sẵn tới chặng tương ứng */
+function migrate40(){let ch=false;for(const k in S.players){const p=S.players[k];if(p.v40)continue;p.skip=p.skip||{};
+ for(let g=1;g<=5;g++){const om=BV.G[g]&&BV.G[g].oldMap;if(!om)continue;let mx=-1;for(let i=0;i<6;i++){const t=p.best[`${g}-t-${i}`],v=p.best[`${g}-v-${i}`];if(t!=null&&v!=null&&t>=passN(g,"t")&&v>=passN(g,"v"))mx=i}if(mx>=0&&om[mx]!=null)p.skip[g]=om[mx]}
+ p.old40={best:p.best,st:p.st,les:p.les};p.best={};p.st={};p.les={};p.v40=1;ch=true}if(ch)save()}
 const add=(o,k,ok)=>{const v=o[k]||[0,0];v[1]++;if(ok)v[0]++;o[k]=v};
 
 /* ---------- âm thanh, giọng đọc ---------- */
@@ -121,21 +129,25 @@ function home(){const p=P();
  $("grades").innerHTML=[1,2,3,4,5].map(g=>`<button class="gcard${p&&p.grade===g?" cur":""}" data-grade="${g}" style="--g:${GM[g].color}">${icon(g,2)}<span><b>Lớp ${g}</b>${GM[g].name}<small>${GM[g].rules.slice(0,2).join(" · ")}</small></span></button>`).join("");
  $("styles").innerHTML=[1,2,3,4,5].map(g=>`<div class="card" style="--g:${GM[g].color};border-top:6px solid var(--g)"><h3 style="color:var(--g)">Lớp ${g} · ${GM[g].name}</h3><p>${GM[g].tag}</p><p class="note">${GM[g].rules.join(" · ")}</p></div>`).join("")}
 function gradeView(g){const p=P(),G=BV.G[g],M=GM[g];let done=0;
- const stops=G.toan.map((t,s)=>{const open=!p||unlocked(p,g,s),ok=p&&stageDone(p,g,s);if(ok)done++;
-  const b=sub=>{const v=best(p,g,s,sub);return v<0?"":`<small>${v}/${qlen(g,sub)}</small>`};
-  return`<article class="stop ${ok?"done":open?"":"lock"}"><div class="ic">${icon(g,ok?2:open?1:0)}</div><div class="card"><h3><small>Chặng ${s+1}</small>${M.places[s]}</h3><p>Toán: ${t.n} · Tiếng Việt: ${G.tv[s].n}</p>
-  ${open?`<div class="acts"><a class="btn coral" href="#bai-${g}-${s}">▶ Vào học</a><button class="btn alt" data-learn="${g}|${s}|t">Toán ${b("t")}</button><button class="btn alt" data-learn="${g}|${s}|v">Tiếng Việt ${b("v")}</button></div>`:`<div class="locknote">Vượt qua chặng ${s} để mở</div>`}</div></article>`}).join("");
+ const N=G.toan.length;let cur=-1;
+ const card=s=>{const t=G.toan[s],m=G.meta?G.meta[s]:null,open=!p||unlocked(p,g,s),ok=p&&stageDone(p,g,s);if(ok)done++;else if(open)cur=s;
+  const b=sub=>{const v=best(p,g,s,sub);return v<0?"":`<small>${v}/${qlen(g,sub)}</small>`};const nb=ncBest(p,g,s);
+  return`<article class="stop ${ok?"done":open?"":"lock"}${m&&m.k!=="w"?" rev":""}"><div class="ic">${icon(g,ok?2:open?1:0)}</div><div class="card"><h3><small>${stageTag(g,s)}</small>${esc(placeOf(g,s))}</h3><p>Toán: ${esc(t.n)} · Tiếng Việt: ${esc(G.tv[s].n)}</p>
+  ${open?`<div class="acts"><a class="btn coral" href="#bai-${g}-${s}">▶ Vào học</a><button class="btn alt" data-learn="${g}|${s}|t">Toán ${b("t")}</button><button class="btn alt" data-learn="${g}|${s}|v">Tiếng Việt ${b("v")}</button><button class="btn alt ncb" data-nc="${g}|${s}">Thử thách${nb>=0?` <small>${nb}</small>`:""}</button></div>`:`<div class="locknote">Vượt qua chặng ${s} để mở</div>`}</div></article>`};
+ const cards=[...Array(N).keys()].map(card);if(cur<0)cur=N-1;
+ const zones=(BV.ZONES||[{n:"Các chặng",a:0,b:N-1}]).filter(z=>z.a<N).map(z=>{const dz=[...Array(Math.min(z.b,N-1)-z.a+1).keys()].filter(i=>p&&stageDone(p,g,z.a+i)).length;const tot=Math.min(z.b,N-1)-z.a+1;
+  return`<details class="zone"${cur>=z.a&&cur<=z.b?" open":""}><summary><b>${z.n}</b><span>Chặng ${z.a+1}–${Math.min(z.b,N-1)+1}</span><em>${dz}/${tot}</em></summary><div class="trail">${cards.slice(z.a,Math.min(z.b,N-1)+1).join("")}</div></details>`}).join("");
  const nr=p?p.rv.filter(r=>r.g===g&&r.due<=Date.now()).length:0;
  const ex=(sub,lab)=>`<div class="acts">${[3,6].map(k=>{const ok=canExam(g,sub,k);return`<button class="btn ${k===3?"g":"alt"}${ok?"":" locked"}" ${ok?`data-exam="${g}|${sub}|${k}"`:`data-lock="${ACC.member?"closed":"key"}"`}>${ok?"":LOCK+" "}${lab} ${k===3?"giữa năm":"cuối năm"}</button>`}).join("")}</div>`;
  const exNote=ACC.admin?`<p class="note">Bạn đang dùng key gốc nên mọi đề đều mở. Chọn đề mở cho học sinh trong mục <a href="#quan-ly">Quản lý</a>.</p>`:ACC.member?(Object.keys(ACC.open).some(k=>k.startsWith(g+"-"))?"":`<p class="note">Thầy cô chưa mở đề kiểm tra nào của lớp ${g}.</p>`):`<p class="note">Phần kiểm tra cần key học sinh. <button class="btn alt" data-keygate="1" style="min-height:36px;padding:4px 12px">Nhập key</button></p>`;
  $("v-grade").innerHTML=`<div class="band gband" style="--g:${M.color}"><div class="wrap"><svg class="em" viewBox="0 0 64 64">${icon(g,2).replace(/^<svg[^>]*>|<\/svg>$/g,"")}</svg><div><h2>Lớp ${g} · ${M.name}</h2><p>${M.tag}</p><div class="rules">${M.rules.map(r=>`<span>${r}</span>`).join("")}</div></div></div></div>
  <div class="band" style="--g:${M.color}"><div class="wrap cols"><div>
-  <h2>Bản đồ 6 chặng</h2><div class="prog"><i style="width:${done/6*100}%"></i></div>
-  <p class="note">${p?`${esc(nm())} đã qua ${done}/6 chặng. Cần đúng từ 60% số câu trở lên ở cả hai trạm để mở chặng sau.`:"Nhập tên ở trang chủ để lưu tiến trình nhé."}</p>
-  <div class="trail">${stops}</div></div>
+  <h2>Bản đồ ${N} chặng</h2><div class="prog"><i style="width:${done/N*100}%"></i></div>
+  <p class="note">${p?`${esc(nm())} đã qua ${done}/${N} chặng. Cần đúng từ 60% số câu trở lên ở cả hai trạm để mở chặng sau. Nút <b>Thử thách</b> là bài nâng cao, mỗi câu đúng được 2 sao.`:"Nhập tên ở trang chủ để lưu tiến trình nhé."}</p>
+  ${zones}</div>
   <aside style="display:grid;gap:16px">
    <div class="card exam"><h3>Kiểm tra theo 3 mức</h3><p>Đề ${M.exam.n} câu, trộn khoảng 50% câu nhận biết, 30% kết nối, 20% vận dụng${M.exam.min?`, làm trong ${M.exam.min} phút`:""}. Chấm và chữa bài sau khi nộp.</p>
-    <p class="note" style="margin-top:12px">Giữa năm: chặng 1–3 · Cuối năm: cả 6 chặng</p>${ex("t","Toán")}${ex("v","Tiếng Việt")}${exNote}</div>
+    <p class="note" style="margin-top:12px">Giữa năm: học kì 1 (chặng 1–20) · Cuối năm: cả 40 chặng</p>${ex("t","Toán")}${ex("v","Tiếng Việt")}${exNote}</div>
    <div class="card"><h3>Ôn câu sai</h3><p>${nr?`Có ${nr} câu đang chờ bé ôn lại.`:"Chưa có câu nào cần ôn. Giỏi lắm!"}</p>${nr?`<a class="btn g" href="#on-tap">Ôn ngay</a>`:""}</div>
    <div class="card"><h3>Cha mẹ xem nhanh</h3><p>Xem bé mạnh, yếu ở chủ đề nào trong mục Báo cáo.</p><a class="btn alt" href="#bao-cao">Xem báo cáo</a></div>
   </aside></div></div>`}
@@ -145,8 +157,10 @@ let Q=null,tick=null;
 function needName(){if(P())return false;location.hash="#home";setTimeout(()=>$("nameIn").focus(),60);return true}
 function startLearn(g,s,sub){if(needName())return;const M=GM[g];let qs=build(g,sub,[s],levelsFor(qlen(g,sub)));if(sub==="v")qs=qs.sort((a,b)=>a.m-b.m);
  Q={mode:"learn",g,s,sub,qs,i:0,score:0,res:[],ans:[],streak:0,gain:0,tries:0};show("play");drawQ()}
-function startExam(g,sub,k){if(needName())return;if(!canExam(g,sub,k)){if(ACC.member)toast("Thầy cô chưa mở đề này.");else keyModal();return}const M=GM[g];const qs=shuffle(build(g,sub,[...Array(k).keys()],examLevels(M.exam.n)));
+function startExam(g,sub,k){if(needName())return;if(!canExam(g,sub,k)){if(ACC.member)toast("Thầy cô chưa mở đề này.");else keyModal();return}const M=GM[g];const qs=shuffle(build(g,sub,BV.examStages(k),examLevels(M.exam.n)));
  Q={mode:"exam",g,sub,k,qs,i:0,score:0,res:[],ans:[],gain:0,end:M.exam.min?Date.now()+M.exam.min*60000:0};show("play");drawQ();if(Q.end)runClock()}
+function startNC(g,s){if(needName())return;const X=BV.G[g].nc(s);const qs=[...X.t.map(q=>prep(g,q)),...X.v.map(o=>Object.assign(parseTV(o.it,o.st),{s,sub:"v",m:3}))];
+ Q={mode:"nc",g,s,qs,i:0,score:0,res:[],ans:[],streak:0,gain:0,tries:0};show("play");drawQ()}
 function startReview(){const p=P();if(!p)return;const due=p.rv.filter(r=>r.due<=Date.now()).slice(0,10);if(!due.length)return;
  Q={mode:"review",g:p.grade,qs:due.map(r=>Object.assign({},r.q,{rid:r.id})),i:0,score:0,res:[],ans:[],gain:0};show("play");drawQ()}
 function runClock(){clearInterval(tick);tick=setInterval(()=>{if(!Q){clearInterval(tick);return}const el=$("clk");const left=Q.end-Date.now();if(left<=0){clearInterval(tick);finish();return}if(el){el.textContent=mmss(left);el.classList.toggle("low",left<60000)}},500)}
@@ -154,7 +168,7 @@ const mmss=ms=>{const s=Math.ceil(ms/1000);return`${Math.floor(s/60)}:${String(s
 const LV=["","Nhận biết","Kết nối","Vận dụng"];
 function drawQ(){const q=Q.qs[Q.i],M=GM[Q.g];Q.done=false;Q.tries=0;Q.hint=false;Q.ord=[];
  if(Q.mode!=="exam")clearInterval(tick);
- const title=Q.shared?esc(Q.shared.title):Q.mode==="les"?`Lớp ${Q.g} · ${M.places[Q.s]} · Bài tập có hình`:Q.mode==="learn"?`Lớp ${Q.g} · ${M.places[Q.s]} · ${Q.sub==="t"?"Toán":"Tiếng Việt"}`:Q.mode==="exam"?`Kiểm tra ${Q.sub==="t"?"Toán":"Tiếng Việt"} lớp ${Q.g}`:"Ôn câu sai";
+ const title=Q.shared?esc(Q.shared.title):Q.mode==="les"?`Lớp ${Q.g} · ${placeOf(Q.g,Q.s)} · Bài tập có hình`:Q.mode==="nc"?`Lớp ${Q.g} · ${placeOf(Q.g,Q.s)} · Thử thách tư duy`:Q.mode==="learn"?`Lớp ${Q.g} · ${placeOf(Q.g,Q.s)} · ${Q.sub==="t"?"Toán":"Tiếng Việt"}`:Q.mode==="exam"?`Kiểm tra ${Q.sub==="t"?"Toán":"Tiếng Việt"} lớp ${Q.g}`:"Ôn câu sai";
  const right=Q.mode==="exam"?(Q.end?`<span class="clock" id="clk">${mmss(Q.end-Date.now())}</span>`:""):`<span>Đúng ${Q.score}${M.combo&&Q.streak>=2?` · <span class="streak">Chuỗi ${Q.streak}</span>`:""}</span>`;
  const perT=Q.mode==="learn"&&M.timer&&S.timer;
  $("play").style.setProperty("--g",M.color);
@@ -170,7 +184,7 @@ function drawQ(){const q=Q.qs[Q.i],M=GM[Q.g];Q.done=false;Q.tries=0;Q.hint=false
  $("qt").textContent=q.q;if(q.p)$("psg").textContent=q.p;
  drawAns(q);
  if(perT){const t0=Date.now();tick=setInterval(()=>{const left=M.timer-(Date.now()-t0)/1000,b=$("tmb");if(!b||Q.done){clearInterval(tick);return}b.style.width=Math.max(0,left/M.timer*100)+"%";$("tm").classList.toggle("low",left<8);if(left<=0){clearInterval(tick);judge(null)}},200)}
- if(Q.mode!=="exam"&&M.speak&&S.speak)setTimeout(()=>speak((q.p?q.p+". ":"")+q.q),250);
+ if(Q.mode!=="exam"&&M.speak&&S.speak)setTimeout(()=>speak((q.p?q.p.replace(/\s*[.!?…]*\s*$/,". "):"")+q.q),250);
  window.scrollTo({top:0})}
 function drawAns(q){const box=$("ans"),prev=Q.mode==="exam"?Q.ans[Q.i]:null;
  if(q.t==="pmc"){box.innerHTML=`<div class="opts popts">${q.opts.map((o,i)=>`<button class="opt pim${prev===o?" pick":""}" data-o="${i}" aria-label="${i+1}"><b>${i+1}</b>${BV.picImg(o)}</button>`).join("")}</div>`}
@@ -188,7 +202,7 @@ function judge(val,btn){if(!Q||Q.done)return;const q=Q.qs[Q.i],M=GM[Q.g],p=P();
  if(q.t==="mcq"||q.t==="pmc")document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;const v=q.opts[+b.dataset.o];if(v===q.a)b.classList.add("ok");else if(b===btn)b.classList.add("no")});
  if(q.t==="in"){$("inp").disabled=true;$("inp").classList.add(ok?"ok":"no");document.querySelectorAll(".pad button,#sub").forEach(b=>b.disabled=true)}
  if(q.t==="ord"){$("ord").classList.add(ok?"ok":"no");document.querySelectorAll("#ord button").forEach(b=>b.disabled=true)}
- if(ok){Q.score++;Q.streak=(Q.streak||0)+1;let gn=1;if((Q.mode==="learn"||Q.mode==="les")&&Q.g===1&&Q.tries===0)gn=2;if(M.combo&&Q.streak>=3)gn++;Q.gain+=gn}else Q.streak=0;
+ if(ok){Q.score++;Q.streak=(Q.streak||0)+1;let gn=1;if((Q.mode==="learn"||Q.mode==="les")&&Q.g===1&&Q.tries===0)gn=2;if(M.combo&&Q.streak>=3)gn++;if(Q.mode==="nc")gn=2;Q.gain+=gn}else Q.streak=0;
  beep(ok);track(q,ok);
  const praise=pick(["Giỏi quá!","Chính xác!","Tuyệt vời!","Bé làm đúng rồi!","Xuất sắc!"]);
  $("fb").innerHTML=`<span><span class="${ok?"y":"n"}" id="fbt"></span><span class="ex" id="fbx"></span></span><button class="btn g" id="next">${Q.i<Q.qs.length-1?"Câu tiếp theo":"Xem kết quả"}</button>`;
@@ -217,11 +231,12 @@ function finish(){clearInterval(tick);const p=P(),M=GM[Q.g];let html="";
  if(p.cls){const ev={name:p.cls.name,type:Q.mode,g:Q.g,sub:Q.sub||"",score:Q.score,n:Q.qs.length,gain:Q.gain,ex:Q.shared?Q.shared.title:""};CL.init().then(ok=>ok&&CL.record(p.cls.code,p.cls.sid,ev)).catch(()=>{});
   if(Q.shared){const r={name:p.cls.name,score:Q.score,n:Q.qs.length,d10:Math.round(Q.score/Q.qs.length*20)/2,ms:Date.now()-Q.t0};CL.submit(Q.shared.code,Q.shared.id,p.cls.sid,r).catch(()=>{})}}
  let extra="",acts="";
- if(Q.mode==="learn"){const k=bk(Q.g,Q.s,Q.sub),old=best(p,Q.g,Q.s,Q.sub),was=Q.s<5&&unlocked(p,Q.g,Q.s+1);if(Q.score>old)p.best[k]=Q.score;
-  const pass=Q.score>=passN(Q.g,Q.sub),now=Q.s<5&&unlocked(p,Q.g,Q.s+1),other=Q.sub==="t"?"v":"t",od=best(p,Q.g,Q.s,other)>=passN(Q.g,other);
-  extra=`<p style="font-size:19px;font-weight:700;text-align:center">${Q.score===Q.qs.length?"Hoàn hảo! Bé đúng tất cả.":pass?"Bé đã vượt qua trạm này!":`Cố lên! Cần đúng ít nhất ${passN(Q.g,Q.sub)} câu để qua trạm.`}<br>Bé nhận được ${Q.gain} sao.</p>${!was&&now?`<p class="card" style="font-weight:800;color:var(--ok);text-align:center">Đã mở chặng ${Q.s+2}: ${M.places[Q.s+1]}!</p>`:""}`;
+ if(Q.mode==="learn"){const k=bk(Q.g,Q.s,Q.sub),old=best(p,Q.g,Q.s,Q.sub),was=Q.s<NS(Q.g)-1&&unlocked(p,Q.g,Q.s+1);if(Q.score>old)p.best[k]=Q.score;
+  const pass=Q.score>=passN(Q.g,Q.sub),now=Q.s<NS(Q.g)-1&&unlocked(p,Q.g,Q.s+1),other=Q.sub==="t"?"v":"t",od=best(p,Q.g,Q.s,other)>=passN(Q.g,other);
+  extra=`<p style="font-size:19px;font-weight:700;text-align:center">${Q.score===Q.qs.length?"Hoàn hảo! Bé đúng tất cả.":pass?"Bé đã vượt qua trạm này!":`Cố lên! Cần đúng ít nhất ${passN(Q.g,Q.sub)} câu để qua trạm.`}<br>Bé nhận được ${Q.gain} sao.</p>${!was&&now?`<p class="card" style="font-weight:800;color:var(--ok);text-align:center">Đã mở chặng ${Q.s+2}: ${placeOf(Q.g,Q.s+1)}!</p>`:""}`;
   acts=`<button class="btn alt" data-learn="${Q.g}|${Q.s}|${Q.sub}">Làm lượt mới</button>${!od?`<button class="btn coral" data-learn="${Q.g}|${Q.s}|${other}">Sang trạm ${other==="t"?"Toán":"Tiếng Việt"}</button>`:now?`<button class="btn coral" data-learn="${Q.g}|${Q.s+1}|t">Đi chặng ${Q.s+2}</button>`:""}<a class="btn" href="#lop-${Q.g}">Về bản đồ</a>`}
  else if(Q.mode==="les"){const st=lesP(p,Q.g,Q.s),old=st.e||0;if(Q.score>old)st.e=Q.score;extra=`<p style="font-size:19px;font-weight:700;text-align:center">${Q.score===Q.qs.length?"Hoàn hảo! Bé đúng tất cả.":Q.score>=Math.ceil(Q.qs.length*.6)?"Bé làm tốt lắm!":"Bé làm lại để đúng nhiều hơn nhé."}<br>Bé nhận được ${Q.gain} sao.</p>`;acts=`<button class="btn alt" data-les="${Q.g}|${Q.s}">Làm lượt mới</button><button class="btn coral" data-learn="${Q.g}|${Q.s}|t">Sang Bước 3: Luyện Toán</button><a class="btn" href="#bai-${Q.g}-${Q.s}">Về các bước</a>`}
+ else if(Q.mode==="nc"){const k=`${Q.g}-${Q.s}`;p.nc=p.nc||{};const old=p.nc[k]==null?-1:p.nc[k];if(Q.score>old)p.nc[k]=Q.score;extra=`<p style="font-size:19px;font-weight:700;text-align:center">${Q.score===Q.qs.length?"Xuất sắc! Bé giải được tất cả bài thử thách.":Q.score>=Math.ceil(Q.qs.length*.6)?"Bé suy nghĩ rất giỏi!":"Bài thử thách khó lắm. Bé đọc kĩ lời giải rồi thử lại nhé."}<br>Mỗi câu đúng được 2 sao. Bé nhận được ${Q.gain} sao.</p>`;acts=`<button class="btn alt" data-nc="${Q.g}|${Q.s}">Thử thách lượt mới</button><a class="btn" href="#bai-${Q.g}-${Q.s}">Về các bước</a><a class="btn alt" href="#lop-${Q.g}">Về bản đồ</a>`}
  else if(Q.shared)acts=`<a class="btn coral" href="#lop-chung">Xem bảng điểm của lớp</a><a class="btn alt" href="#bao-cao">Xem báo cáo</a>`;
  else if(Q.mode==="exam")acts=`<button class="btn alt" data-exam="${Q.g}|${Q.sub}|${Q.k}">Làm đề khác</button><a class="btn" href="#lop-${Q.g}">Về lớp ${Q.g}</a><a class="btn alt" href="#bao-cao">Xem báo cáo</a>`;
  else{extra=`<p style="text-align:center;font-weight:700">Bé ôn đúng ${Q.score} câu, nhận ${Q.gain} sao. Câu đúng sẽ quay lại sau vài ngày để bé nhớ lâu hơn.</p>`;acts=`<a class="btn" href="#on-tap">Ôn tiếp</a><a class="btn alt" href="#lop-${Q.g}">Về lớp ${Q.g}</a>`}
@@ -252,7 +267,7 @@ function report(){const p=P();if(!p){$("report").innerHTML=`<h2>Báo cáo học 
  <div class="card"><h3>Cần luyện thêm</h3>${weak.length?`<div class="weak">${weak.slice(0,4).map(w=>`<div>${w.n} · ${w.a}%</div>`).join("")}</div>`:`<p>Chưa thấy chủ đề nào dưới 70% (tính các chủ đề đã làm từ 4 câu trở lên).</p>`}
   <p class="note">Câu sai đang chờ ôn: ${p.rv.filter(r=>r.g===g).length}</p><div class="acts" style="margin-top:12px"><a class="btn g" href="#on-tap">Ôn câu sai</a><button class="btn alt" id="copyRep">Sao chép báo cáo</button></div><p class="note" id="copyMsg"></p></div></div>
  <h3 style="margin-top:24px">Theo chủ đề trong sách</h3>
- <table><thead><tr><th>Chặng</th><th>Toán</th><th>Tiếng Việt</th></tr></thead><tbody>${G.toan.map((t,s)=>`<tr><td><b>${s+1}. ${M.places[s]}</b><div class="note" style="margin:0">${t.n} · ${G.tv[s].n}</div></td><td>${cell(p.st[`${g}-t-${s}`])}</td><td>${cell(p.st[`${g}-v-${s}`])}</td></tr>`).join("")}</tbody></table>
+ <table><thead><tr><th>Chặng</th><th>Toán</th><th>Tiếng Việt</th></tr></thead><tbody>${G.toan.map((t,s)=>`<tr><td><b>${s+1}. ${placeOf(g,s)}</b><div class="note" style="margin:0">${t.n} · ${G.tv[s].n}</div></td><td>${cell(p.st[`${g}-t-${s}`])}</td><td>${cell(p.st[`${g}-v-${s}`])}</td></tr>`).join("")}</tbody></table>
  <h3 style="margin-top:24px">Bài kiểm tra gần đây</h3>
  ${tests.length?`<table><thead><tr><th>Ngày</th><th>Môn</th><th>Phạm vi</th><th class="n">Điểm</th></tr></thead><tbody>${tests.map(t=>`<tr><td>${new Date(t.d).toLocaleDateString("vi-VN")}</td><td>${t.sub==="t"?"Toán":"Tiếng Việt"}</td><td>${t.k===3?"Giữa năm":"Cuối năm"}</td><td class="n"><b>${String(Math.round(t.sc/t.n*20)/2).replace(".",",")}</b> (${t.sc}/${t.n})</td></tr>`).join("")}</tbody></table>`:`<p>Bé chưa làm bài kiểm tra nào ở lớp ${g}.</p>`}`;
  $("repN").textContent=nm();
@@ -283,7 +298,7 @@ const lesP=(p,g,s)=>{p.les=p.les||{};return p.les[lesKey(g,s)]=p.les[lesKey(g,s)
 const LZ={g:1,s:0,view:"home",ci:0,flip:false};
 function lesExercises(g,s){const L=BV.LES[g][s],out=[],seen=new Set();let k=0;for(const fn of L.ex){let q,t=0;do{q=fn()}while(seen.has(sig(q))&&++t<25);seen.add(sig(q));q=Object.assign({sub:"p",s},q);q.m=q.m||1;out.push(prep(g,q))}return out}
 function startLes(g,s){if(needName())return;const qs=lesExercises(g,s);Q={mode:"les",g,s,sub:"p",qs,i:0,score:0,res:[],ans:[],streak:0,gain:0,tries:0};show("play");drawQ()}
-const STEPC=["#2f9e44","#1c7ed6","#e8590c","#d6336c","#7048e8"];
+const STEPC=["#2f9e44","#1c7ed6","#e8590c","#d6336c","#f08c00","#7048e8"];
 function lesScene(ids,bg){return`<svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice"><rect width="300" height="170" fill="${bg}"/><circle cx="250" cy="34" r="22" fill="#fff" opacity=".35"/><path d="M0 140q75-30 150 0t150 0v30H0z" fill="#fff" opacity=".35"/>${ids.slice(0,3).map((id,i)=>BV.B.img(id,[18,105,192][i],[52,30,52][i],[90,100,90][i])).join("")}</svg>`}
 function lessonView(g,s){LZ.g=g;LZ.s=s;const L=BV.LES[g]&&BV.LES[g][s];const box=$("v-lesson");if(!L){box.innerHTML="<div class='band'><p>Chưa có bài học.</p></div>";return}
  const p=P(),M=GM[g],st=p?lesP(p,g,s):{};const bt=sub=>{const v=best(p,g,s,sub);return v<0?null:v};
@@ -293,15 +308,16 @@ function lessonView(g,s){LZ.g=g;LZ.s=s;const L=BV.LES[g]&&BV.LES[g][s];const box
   {k:"ex",t:`Bước 2 · ${L.ex.length} câu có tranh`,n:"Bài tập có hình",ids:L.hero.slice().reverse(),done:(st.e||0)>=Math.ceil(L.ex.length*.6),sc:st.e!=null?`${st.e}/${L.ex.length}`:"",act:`data-les="${g}|${s}"`},
   {k:"t",t:`Bước 3 · ${BV.G[g].toan[s].n}`,n:"Luyện Toán",ids:["tao","cam","sao"],done:bt("t")>=passN(g,"t"),sc:bt("t")!=null?`${bt("t")}/${qlen(g,"t")}`:"",act:`data-learn="${g}|${s}|t"`},
   {k:"v",t:`Bước 4 · ${BV.G[g].tv[s].n}`,n:"Luyện Tiếng Việt",ids:["sach","vo","butchi"],done:bt("v")>=passN(g,"v"),sc:bt("v")!=null?`${bt("v")}/${qlen(g,"v")}`:"",act:`data-learn="${g}|${s}|v"`},
+  {k:"nc",t:"Bước 5 · Nâng cao",n:"Thử thách tư duy",ids:["sao","nui","troi"],done:p?ncBest(p,g,s)>=4:false,sc:p&&ncBest(p,g,s)>=0?`${ncBest(p,g,s)} câu đúng`:"",act:`data-nc="${g}|${s}"`},
   {k:"game",t:"Trò chơi · thêm",n:"Lật hình tìm cặp",ids:["bong","dieu","trong"],done:!!st.gm,act:`data-lv="game"`}];
  const next=steps.find(x=>!x.done)||steps[1];
  box.innerHTML=`<div class="band lesband" style="--g:${M.color}"><div class="wrap">
-  <div class="lestop"><a class="btn alt" href="#lop-${g}">← Bản đồ</a><div><div class="note" style="margin:0">Lớp ${g} · ${M.name} · Chặng ${s+1}</div><h2>${M.places[s]}</h2></div></div>
+  <div class="lestop"><a class="btn alt" href="#lop-${g}">← Bản đồ</a><div><div class="note" style="margin:0">Lớp ${g} · ${M.name} · ${stageTag(g,s)}</div><h2>${placeOf(g,s)}</h2></div></div>
   <div class="lesgrid"><div class="card leshero"><div class="lsc">${lesScene(L.hero,"#e7f5ff")}</div><h3>Hôm nay con học</h3><p class="lintro" id="lintro"></p>${canSpeak?`<button class="speak" data-lspeak="1" type="button"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="2" fill="none"/></svg>Nghe</button>`:""}
    <div class="lprog"><i style="width:${steps.filter(x=>x.done).length/steps.length*100}%"></i></div><p class="note" style="margin:4px 0 12px">Đã xong ${steps.filter(x=>x.done).length}/${steps.length} bước</p>
    <button class="btn g lgo" ${next.act}>▶ Bắt đầu: ${next.n}</button>
    <p class="ptip"><b>Ba mẹ đồng hành:</b> ngồi cùng con ở Bước 1, đọc to các thẻ và khen con khi làm xong mỗi bước. Không ép, không so sánh con với bạn.</p></div>
-  <div class="steps2">${steps.map((x,i)=>`<button class="stepc${x.done?" done":""}" ${x.act} style="--c:${STEPC[i]}"><div class="sp">${lesScene(x.ids,["#d3f9d8","#d0ebff","#fff4e6","#ffdeeb","#e5dbff"][i])}${x.done?`<span class="ok">✓ Xong</span>`:""}</div><div class="sl"><small>${esc(x.t)}</small><b>${x.n}</b>${x.sc?`<em>${x.sc}</em>`:""}</div></button>`).join("")}</div></div></div></div>`;
+  <div class="steps2">${steps.map((x,i)=>`<button class="stepc${x.done?" done":""}" ${x.act} style="--c:${STEPC[i]}"><div class="sp">${lesScene(x.ids,["#d3f9d8","#d0ebff","#fff4e6","#ffdeeb","#fff3bf","#e5dbff"][i])}${x.done?`<span class="ok">✓ Xong</span>`:""}</div><div class="sl"><small>${esc(x.t)}</small><b>${x.n}</b>${x.sc?`<em>${x.sc}</em>`:""}</div></button>`).join("")}</div></div></div></div>`;
  $("lintro").textContent=L.intro}
 function cardsView(g,s){const L=BV.LES[g][s],cs=L.cards.map(c=>BV.cardOf(g,c)),i=LZ.ci,c=cs[i];
  $("v-lesson").innerHTML=`<div class="band lesband" style="--g:${GM[g].color}"><div class="wrap" style="max-width:760px"><div class="lestop"><button class="btn alt" data-lv="home">← Các bước của chặng</button><div><div class="note" style="margin:0">Bước 1 · Xem trước</div><h2>Thẻ học</h2></div></div>
@@ -446,7 +462,7 @@ const progOf=p=>({best:p.best,st:p.st,lv:p.lv,owned:p.owned,tests:p.tests.slice(
 let syncT=null;
 function sync(){const p=S.players&&S.players[S.cur];if(!p||!p.cls||!window.CL||!CL.ready)return;clearTimeout(syncT);const c=p.cls,pr=progOf(p),g=p.grade;syncT=setTimeout(()=>CL.saveProg(c.code,c.sid,pr,g).catch(()=>{}),1200)}
 function seeded(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function startShared(code,ex){const r=Math.random;let qs;Math.random=seeded(ex.seed);try{qs=shuffle(build(ex.g,ex.sub,[...Array(ex.k).keys()],examLevels(ex.n)))}finally{Math.random=r}
+function startShared(code,ex){const r=Math.random;let qs;Math.random=seeded(ex.seed);try{qs=shuffle(build(ex.g,ex.sub,BV.examStages(ex.k),examLevels(ex.n)))}finally{Math.random=r}
  Q={mode:"exam",g:ex.g,sub:ex.sub,k:ex.k,qs,i:0,score:0,res:[],ans:[],gain:0,end:ex.min?Date.now()+ex.min*60000:0,shared:{code,id:ex.id,title:ex.title},t0:Date.now()};show("play");drawQ();if(Q.end)runClock()}
 const CV={code:null,tab:"rank",rt:"w",step:null,sel:null,msg:""};
 const cbox=()=>$("cls");
@@ -493,7 +509,7 @@ async function rankTab(code,c,me){const list=await CL.students(code);const k=CV.
  if(rows.length){$("rk").innerHTML=rows.map((r,i)=>`<tr${me&&me.sid===r.id?' style="background:var(--tint)"':""}><td><span class="medal">${i+1}</span></td><td><b></b></td><td class="n">${r.v}</td></tr>`).join("");[...$("rk").children].forEach((tr,i)=>tr.querySelector("b").textContent=rows[i].name)}}
 async function examTab(code,c,me){const ex=await CL.exams(code);const teach=ACC.admin;
  const mine=me?await Promise.all(ex.map(e=>CL.myResult(code,e.id,me.sid))):[];
- $("cbody").innerHTML=ex.length?`<div style="display:grid;gap:14px;margin-top:14px">${ex.map((e,i)=>`<div class="card"><h3 data-t="t${i}"></h3><p>${subN(e.sub)} lớp ${esc(e.g)} · ${e.k===3?"chặng 1–3":"cả 6 chặng"} · ${esc(e.n)} câu${e.min?` · ${esc(e.min)} phút`:""} · ${e.open?"<b style='color:var(--ok)'>Đang mở</b>":"Đã đóng"}</p>
+ $("cbody").innerHTML=ex.length?`<div style="display:grid;gap:14px;margin-top:14px">${ex.map((e,i)=>`<div class="card"><h3 data-t="t${i}"></h3><p>${subN(e.sub)} lớp ${esc(e.g)} · ${e.k===3?"học kì 1":"cả năm"} · ${esc(e.n)} câu${e.min?` · ${esc(e.min)} phút`:""} · ${e.open?"<b style='color:var(--ok)'>Đang mở</b>":"Đã đóng"}</p>
   <div class="acts">${me?(mine[i]?`<span class="pill">Bé đã nộp: ${String(mine[i].d10).replace(".",",")} điểm (${mine[i].score}/${mine[i].n})</span>`:e.open?`<button class="btn coral" data-c="take" data-x="${esc(e.id)}">Làm bài</button>`:""):""}<button class="btn alt" data-c="res" data-x="${esc(e.id)}">Bảng điểm</button>${teach?`<button class="btn alt" data-c="toggle" data-x="${esc(e.id)}" data-o="${e.open?1:0}">${e.open?"Đóng đề":"Mở lại đề"}</button>`:""}</div><div id="res-${esc(e.id)}"></div></div>`).join("")}</div>`:`<p style="margin-top:14px">Chưa có đề thi chung nào.${teach?" Thầy cô vào thẻ Giáo viên để tạo đề.":" Khi thầy cô tạo đề, đề sẽ hiện ở đây."}</p>`;
  ex.forEach((e,i)=>{const h=document.querySelector(`[data-t="t${i}"]`);if(h)h.textContent=e.title});CV.ex=ex}
 async function showResults(code,id){const el=$("res-"+id);if(!el)return;el.innerHTML="<p>Đang tải…</p>";const rs=(await CL.results(code,id)).sort((a,b)=>b.score-a.score||a.ms-b.ms);
@@ -522,7 +538,7 @@ async function teachTab(code,c){const list=await CL.students(code);const iss=CV.
   <div class="acts" style="margin-top:12px"><button class="btn coral" data-c="copy" data-v="issued">Sao chép tất cả</button><button class="btn" data-c="print">In thẻ đăng nhập có mã QR</button></div></div>`:""}
  <div class="card" style="margin-top:18px"><h3>Tạo đề thi chung</h3><p class="note">Mọi bạn trong lớp nhận cùng một đề, cùng thứ tự câu. Mỗi bạn được nộp một lần.</p>
   <form id="exForm" style="display:grid;gap:10px;margin-top:8px;max-width:560px"><input id="exTitle" maxlength="60" placeholder="Tên đề, VD: Thi thử Toán tuần 12" style="font-size:17px;padding:12px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink)" aria-label="Tên đề">
-  ${[["exSub","Môn",[["t","Toán"],["v","Tiếng Việt"]]],["exG","Khối",[1,2,3,4,5].map(g=>[g,"Lớp "+g])],["exK","Phạm vi",[[3,"Giữa năm (chặng 1–3)"],[6,"Cuối năm (cả 6 chặng)"]]],["exN","Số câu",[[10,"10 câu"],[15,"15 câu"],[20,"20 câu"]]],["exMin","Thời gian",[[0,"Không giới hạn"],[15,"15 phút"],[20,"20 phút"],[30,"30 phút"],[40,"40 phút"]]]].map(([id,l,o])=>`<label style="display:grid;grid-template-columns:6em 1fr;align-items:center;gap:8px;font-weight:700">${l}<select id="${id}" style="font-size:17px;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-height:44px">${o.map(([v,t])=>`<option value="${v}"${id==="exG"&&+v===+c.grade?" selected":""}${id==="exMin"&&v===20?" selected":""}>${t}</option>`).join("")}</select></label>`).join("")}
+  ${[["exSub","Môn",[["t","Toán"],["v","Tiếng Việt"]]],["exG","Khối",[1,2,3,4,5].map(g=>[g,"Lớp "+g])],["exK","Phạm vi",[[3,"Giữa năm (học kì 1, chặng 1–20)"],[6,"Cuối năm (cả 40 chặng)"]]],["exN","Số câu",[[10,"10 câu"],[15,"15 câu"],[20,"20 câu"]]],["exMin","Thời gian",[[0,"Không giới hạn"],[15,"15 phút"],[20,"20 phút"],[30,"30 phút"],[40,"40 phút"]]]].map(([id,l,o])=>`<label style="display:grid;grid-template-columns:6em 1fr;align-items:center;gap:8px;font-weight:700">${l}<select id="${id}" style="font-size:17px;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);min-height:44px">${o.map(([v,t])=>`<option value="${v}"${id==="exG"&&+v===+c.grade?" selected":""}${id==="exMin"&&v===20?" selected":""}>${t}</option>`).join("")}</select></label>`).join("")}
   <button class="btn coral">Tạo đề</button></form></div>
  <div class="card" style="margin-top:18px"><h3>Học sinh (${list.length})</h3>${list.length?`<table><thead><tr><th>Tên</th><th class="n">Sao</th><th></th></tr></thead><tbody id="stl"></tbody></table><div class="acts" style="margin-top:12px"><button class="btn alt" data-c="allpins">Cấp mã mới cho cả lớp</button></div>`:"<p>Chưa có bạn nào. Thêm tên ở ô bên trên.</p>"}
   <p class="note">Cấp mã mới khi bé quên mã: mã và link cũ của bé sẽ không dùng được nữa. Ẩn tên khi tạo nhầm.</p></div>`;
@@ -612,12 +628,13 @@ function route(){clearInterval(tick);Q=null;try{BV.voice.stop()}catch(e){}
  if(m||h==="lop"){const g=m?+m[1]:(p?p.grade:1);if(p&&p.grade!==g){p.grade=g;save()}gradeView(g);v="grade";header();$("navGrade").setAttribute("aria-current","page")}
  else if(h==="on-tap"){review();v="review";mark(h)}else if(h==="bao-cao"){repG=null;report();v="report";mark(h)}
  else if(h==="shop"){shop();v="shop";mark(h)}else if(h==="rank"){rank();v="rank";mark(h)}else if(h==="guide"){v="guide";mark(h);voiceView()}else if(h==="lop-chung"){classView();v="class";mark(h)}else if(h==="quan-ly"){adminView();v="admin";mark(h)}
- else if(/^bai-[1-5]-[0-5]$/.test(h)){const[,g,st]=h.split("-");if(p&&p.grade!==+g){p.grade=+g;save()}LZ.view="home";lessonView(+g,+st);v="lesson";$("navGrade").setAttribute("aria-current","page")}
+ else if(/^bai-[1-5]-\d{1,2}$/.test(h)&&BV.LES[+h.split("-")[1]]&&+h.split("-")[2]<NS(+h.split("-")[1])){const[,g,st]=h.split("-");if(p&&p.grade!==+g){p.grade=+g;save()}LZ.view="home";lessonView(+g,+st);v="lesson";$("navGrade").setAttribute("aria-current","page")}
  else{home();mark("home")}
  show(v);window.scrollTo({top:0})}
 window.addEventListener("hashchange",route);
 
 document.addEventListener("click",e=>{const t=e.target;
+ const NC=t.closest("[data-nc]");if(NC){const[g,s]=NC.dataset.nc.split("|");startNC(+g,+s);return}
  const L=t.closest("[data-learn]");if(L){const[g,s,sub]=L.dataset.learn.split("|");startLearn(+g,+s,sub);return}
  const X=t.closest("[data-exam]");if(X){const[g,sub,k]=X.dataset.exam.split("|");startExam(+g,sub,+k);return}
  const gr=t.closest("[data-grade]");if(gr){const g=+gr.dataset.grade;if(!P()){$("nameIn").focus();$("hello").textContent=`Nhập tên của bé để vào lớp ${g} nhé.`;S.pending=g;return}location.hash="#lop-"+g;return}
@@ -644,7 +661,7 @@ document.addEventListener("input",e=>{if(e.target.id==="inp"&&Q&&Q.mode==="exam"
 $("nameForm").addEventListener("submit",e=>{e.preventDefault();const n=$("nameIn").value.trim().replace(/\s+/g," ");if(!n){$("nameIn").focus();return}
  if(!S.players[n])S.players[n]=newP(S.pending||1);S.cur=n;if(S.pending){S.players[n].grade=S.pending;delete S.pending}save();$("nameIn").value="";location.hash="#lop-"+S.players[n].grade});
 [["setTimer","timer"],["setSound","sound"],["setSpeak","speak"]].forEach(([id,k])=>{$(id).checked=S[k];$(id).addEventListener("change",e=>{S[k]=e.target.checked;save()})});
-loadClassDict();refreshAcc(true);
+migrate40();loadClassDict();refreshAcc(true);
 window.BVapp={build,same,GM,parseTV,Q:()=>Q,quickStart,LZ,acc:()=>ACC,refreshAcc};
 route();
 {const u=new URLSearchParams(location.search);if(u.get("lop"))quickStart(u.get("lop"),u.get("ma"));else if(u.get("key")){const k=u.get("key").replace(/\D/g,"");try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}keyModal();KM.v=k.slice(0,8);kmRender();if(KM.v.length===8)kmSubmit()}}

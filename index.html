@@ -11,7 +11,7 @@
    IDEA: mỗi lớp là một thế giới riêng trong cuốn sách phiêu lưu: vườn ươm, đảo kho báu, đường đua, phi thuyền, phòng thi
    PICTURE: mỗi thế giới có biểu tượng riêng ở từng trạm; câu hỏi có hình vẽ (đếm, đồng hồ, hình học, phân số)
    COLOUR and TYPE: vàng hướng dương làm khung chung; mỗi lớp một màu chủ đạo; Baloo 2 + Nunito (đủ dấu tiếng Việt)
-   LAYOUT: menu trên cùng; trang chủ chọn lớp; mỗi lớp có bản đồ 6 chặng + khu kiểm tra; thẻ câu hỏi lớn ở giữa */
+   LAYOUT: menu trên cùng; trang chủ chọn lớp; mỗi lớp có bản đồ 40 chặng + khu kiểm tra; thẻ câu hỏi lớn ở giữa */
 :root{color-scheme:light dark;
 --bg:light-dark(#ffffff,#17182b);--ink:light-dark(#1d2a5c,#eef1ff);--soft:light-dark(#53608f,#b8bfe3);
 --sun:light-dark(#ffd23f,#2a2550);--sunInk:light-dark(#1d2a5c,#fff3c4);--card:light-dark(#ffffff,#22243d);
@@ -83,6 +83,17 @@ nav a[aria-current=page]{background:light-dark(#fff,#3a3570)}
 .stop p{margin:4px 0 10px;color:var(--soft);font-size:15px}
 .acts{display:flex;gap:10px;flex-wrap:wrap}
 .acts small{font-weight:700;opacity:.85}
+.zone{margin-top:14px;border:3px solid var(--line);border-radius:22px;background:var(--card);padding:4px 14px}
+.zone[open]{border-color:var(--g);padding-bottom:14px}
+.zone summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:12px 4px;font-size:18px;list-style:none}
+.zone summary::-webkit-details-marker{display:none}
+.zone summary::before{content:"▸";font-size:18px;color:var(--g);transition:.2s}
+.zone[open] summary::before{transform:rotate(90deg)}
+.zone summary span{color:var(--soft);font-weight:700;font-size:15px}
+.zone summary em{margin-left:auto;font-style:normal;font-weight:800;background:var(--g);color:#fff;border-radius:99px;padding:2px 12px;font-size:15px}
+.stop.rev .card{background:linear-gradient(135deg,#fff9db,#fff);border-color:#fcc419}
+.btn.ncb{border-color:#f08c00;color:#b35c00}
+.btn.ncb::before{content:"★ ";color:#f08c00}
 .locknote{font-size:15px;font-weight:700;color:var(--soft)}
 .exam h3{margin-bottom:6px}.exam .acts{margin-top:10px}.exam .btn{flex:1 1 140px}
 .qwrap{max-width:880px;margin:0 auto}
@@ -327,7 +338,7 @@ footer{padding:22px max(5vw,16px);text-align:center;color:var(--soft);font-size:
  <h2>Hướng dẫn cho bé, phụ huynh và thầy cô</h2>
  <ol class="steps">
   <li><div><h3>Nhập tên và chọn lớp</h3>Ở trang chủ, bé nhập tên rồi chọn lớp mình đang học. Nhiều bạn có thể dùng chung một máy.</div></li>
-  <li><div><h3>Đi qua 6 chặng</h3>Mỗi chặng có một trạm Toán và một trạm Tiếng Việt theo thứ tự bài học trong sách. Làm đúng từ 60% trở lên ở cả hai trạm để mở chặng sau.</div></li>
+  <li><div><h3>Đi qua 40 chặng</h3>Mỗi lớp có 40 chặng: 35 tuần học theo thứ tự bài trong sách và 5 chặng ôn tập. Mỗi chặng có bài học có hình, một trạm Toán, một trạm Tiếng Việt (có truyện đọc hiểu) và bài Thử thách tư duy nâng cao. Làm đúng từ 60% trở lên ở cả hai trạm để mở chặng sau.</div></li>
   <li><div><h3>Làm bài kiểm tra</h3>Mỗi lớp có bài kiểm tra giữa năm và cuối năm cho từng môn. Đề trộn câu ở 3 mức theo Thông tư 27/2020: nhận biết (khoảng 50%), kết nối (khoảng 30%), vận dụng (khoảng 20%). Trong lúc làm bài không báo đúng sai; nộp bài xong mới chấm và chữa từng câu.</div></li>
   <li><div><h3>Ôn câu sai</h3>Câu nào bé làm sai sẽ vào mục Ôn câu sai. Làm đúng thì câu đó quay lại sau 1 ngày, 3 ngày, rồi 7 ngày, cho tới khi bé nhớ chắc.</div></li>
   <li><div><h3>Vào lớp chung</h3>Bé cần key học sinh (8 số) hoặc mã của bé do thầy cô cấp. Bé nhập một lần là vào lớp được từ máy đó. Sao và tiến trình được lưu lâu dài, có bảng xếp hạng tuần, tháng và các đề thi chung cả lớp cùng làm.</div></li>
@@ -385,8 +396,15 @@ BV.H.capV=name=>{const cap=w=>w.split("-").map((s,i)=>i===0?s.charAt(0).toUpperC
 <script src="lop4-them.js"></script>
 <script src="lop5.js"></script>
 <script src="lop5-them.js"></script>
+<script src="chang40.js"></script>
+<script src="lop1-40.js"></script>
+<script src="lop2-40.js"></script>
+<script src="lop3-40.js"></script>
+<script src="lop4-40.js"></script>
+<script src="lop5-40.js"></script>
 <script src="tranh.js"></script>
 <script src="baihoc.js"></script>
+<script src="baihoc40.js"></script>
 <script src="giongdoc-config.js"></script>
 <script src="giongdoc.js"></script>
 <script src="firebase-config.js"></script>

@@ -167,6 +167,8 @@ def(5,4,{intro:"Thể tích hình hộp chữ nhật và các biện pháp so s�
 def(5,5,{intro:"Vận tốc, quãng đường, thời gian bằng sơ đồ và đọc hiểu câu văn tả tranh.",hero:["oto","xedap","song"],
  cards:[C({k:"road",lab:"45 km/giờ · 2 giờ"},"s = v × t","Quãng đường = vận tốc × thời gian = 90 km."),C({k:"road",lab:"120 km · 3 giờ"},"v = s : t","Vận tốc = 120 : 3 = 40 km/giờ."),C(img("thuyen"),P.thuyen.ss,"Hình ảnh so sánh gợi con thuyền nhỏ bé.")],
  ex:[()=>roadQ(1),()=>roadQ(),()=>roadQ(),()=>roadQ(),()=>roadQ(3),()=>B.desc(KS),()=>B.desc(KS),()=>B.desc(KS,3),()=>B.order(KS),()=>B.order(KS,3),()=>B.trait(KS),()=>B.act(AN)]});
+/* cho bộ 40 chặng dùng lại các bài có hình */
+BV.LX={img,C,cap,KS,CV,QUA,HT,NHA,TN,AN,OBJ,clockQ,lenQ,lenNum,shapeQ,roundObj,addC,subC,senQ,markQ,scaleQ,jugQ,pairQ,synQ,ssQ,kindQ,listQ,quoteQ,dashQ,hnQ,petQ,idiom,idiomMean,moneyQ,gridQ,rectQ,thermoQ,blocksQ,lineQ,barsQ,avgQ,segQ,fracPie,fracSet,partOf,angleQ,polyQ,g100,roadQ,boxQ,geoQ,wordImg,nounQ,properQ,capQ,trnQ,nhQ,pronQ,ktQ,ghepQ,relQ,linkQ,bpQ,dnQ,KW,SPCK,SPSX};
 /* thẻ mặc định cho tranh */
 BV.cardOf=(g,c)=>{if(typeof c!=="string")return c;const p=P[c];const b=g<=2?`Tiếng “${p.w}”: ${p.am?"âm đầu "+p.am+", ":""}vần ${p.van}, ${p.th==="ngang"?"không có dấu":"dấu "+p.th}. ${p.d}`:`${p.d}${p.ss?" "+p.ss:""}`;return{pic:{k:"img",id:c},f:p.n,b}};
 }
